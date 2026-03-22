@@ -18,7 +18,10 @@ client.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       clearAuth();
-      globalThis.location.href = "/login";
+      const path = globalThis.location.pathname;
+      if (path !== "/login" && path !== "/register") {
+        globalThis.location.href = "/login";
+      }
     }
     return Promise.reject(err);
   }

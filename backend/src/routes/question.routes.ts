@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { pool } from '../db/pool.js';
 import { verifyJWT } from '../middleware/auth.js';
 import { sendQuestionSchema } from '../validators/question.validator.js';
+import { createNotification } from '../db/notifications.js';
 
 const router = Router();
 
@@ -20,8 +21,9 @@ const router = Router();
  *             required: [recipient_username, content]
  *             properties:
  *               recipient_username: { type: string }
- *               content: { type: string, maxLength: 500 }
+ *               content: { type: string, maxLength: 300 }
  *               sender_name: { type: string, maxLength: 60 }
+ *               show_in_feed: { type: boolean }
  *     responses:
  *       201:
  *         description: Question sent
@@ -40,9 +42,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     if (authHeader?.startsWith('Bearer ')) {
       try {
         const { default: jwt } = await import('jsonwebtoken');
-        const payload = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET!) as {
-          id: string;
-        };
+        const payload = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET!) as { id: string };
         senderId = payload.id;
       } catch {
         // unauthenticated — anonymous question
@@ -66,12 +66,18 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       return;
     }
 
+    // show_in_feed defaults to TRUE for logged-in, FALSE for anonymous
+    const showInFeed = data.show_in_feed ?? (senderId !== null);
+
     const result = await pool.query(
-      `INSERT INTO questions (recipient_id, sender_id, sender_name, content)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, recipient_id, sender_id, sender_name, content, is_answered, created_at`,
-      [recipient.id, senderId, data.sender_name ?? null, data.content]
+      `INSERT INTO questions (recipient_id, sender_id, sender_name, content, show_in_feed)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, recipient_id, sender_id, sender_name, content, is_answered, show_in_feed, created_at`,
+      [recipient.id, senderId, data.sender_name ?? null, data.content, showInFeed]
     );
+
+    // Notify recipient of new question
+    await createNotification(recipient.id, 'new_question', result.rows[0].id, senderId);
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -96,7 +102,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 router.get('/inbox', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await pool.query(
-      `SELECT id, sender_id, sender_name, content, is_answered, created_at
+      `SELECT id, sender_id, sender_name, content, is_answered, show_in_feed, created_at
        FROM questions
        WHERE recipient_id = $1 AND is_answered = FALSE
        ORDER BY created_at DESC`,

@@ -1,15 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getFeed, toggleLike } from "@/api/answers.api";
-import client from "@/api/client";
-import type { StoredUser } from "@/lib/auth";
+import { getProfile } from "@/api/users.api";
 
 export function useProfile(username: string) {
   return useQuery({
     queryKey: ["profile", username],
-    queryFn: async () => {
-      const res = await client.get<StoredUser>(`/api/users/${username}`);
-      return res.data;
-    },
+    queryFn: () => getProfile(username),
     enabled: !!username,
   });
 }

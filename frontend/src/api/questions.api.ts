@@ -13,6 +13,7 @@ export async function sendQuestion(data: {
   recipient_username: string;
   content: string;
   sender_name?: string;
+  show_in_feed?: boolean;
 }): Promise<Question> {
   const res = await client.post<Question>("/api/questions", data);
   return res.data;

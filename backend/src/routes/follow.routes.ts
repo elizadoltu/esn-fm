@@ -1,45 +1,143 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { pool } from '../db/pool.js';
 import { verifyJWT } from '../middleware/auth.js';
+import { createNotification } from '../db/notifications.js';
 
 const router = Router();
 
 /**
  * @openapi
- * /api/follows/{username}:
- *   post:
- *     summary: Follow a user
+ * /api/follows/requests:
+ *   get:
+ *     summary: List pending follow requests for the current user
  *     tags: [Follows]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: username
- *         required: true
- *         schema: { type: string }
  *     responses:
  *       200:
- *         description: Now following
- *       404:
- *         description: User not found
+ *         description: List of pending requesters
  */
-router.post('/:username', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/requests', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [
-      req.params.username,
-    ]);
-    if (!target.rows[0]) {
+    const result = await pool.query(
+      `SELECT u.id, u.username, u.display_name, u.avatar_url
+       FROM follows f
+       JOIN users u ON u.id = f.follower_id
+       WHERE f.following_id = $1 AND f.status = 'pending'
+       ORDER BY f.created_at DESC`,
+      [req.user!.id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * @openapi
+ * /api/follows/requests/{username}/approve:
+ *   patch:
+ *     summary: Approve a pending follow request from a user
+ *     tags: [Follows]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.patch('/requests/:username/approve', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const requester = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
+    if (!requester.rows[0]) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    const requesterId = requester.rows[0].id;
+
+    const updated = await pool.query(
+      `UPDATE follows SET status = 'accepted'
+       WHERE follower_id = $1 AND following_id = $2 AND status = 'pending'
+       RETURNING follower_id`,
+      [requesterId, req.user!.id]
+    );
+
+    if (!updated.rows[0]) {
+      res.status(404).json({ error: 'No pending request found' });
+      return;
+    }
+
+    // Notify the requester that their request was accepted
+    await createNotification(requesterId, 'new_follower', req.user!.id, req.user!.id);
+
+    res.json({ approved: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * @openapi
+ * /api/follows/requests/{username}/decline:
+ *   delete:
+ *     summary: Decline a pending follow request from a user
+ *     tags: [Follows]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.delete('/requests/:username/decline', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const requester = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
+    if (!requester.rows[0]) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
 
     await pool.query(
-      `INSERT INTO follows (follower_id, following_id) VALUES ($1, $2)
-       ON CONFLICT DO NOTHING`,
-      [req.user!.id, target.rows[0].id]
+      `DELETE FROM follows WHERE follower_id = $1 AND following_id = $2 AND status = 'pending'`,
+      [requester.rows[0].id, req.user!.id]
     );
 
-    res.json({ following: true });
+    res.json({ declined: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * @openapi
+ * /api/follows/{username}:
+ *   post:
+ *     summary: Follow a user (pending if private)
+ *     tags: [Follows]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.post('/:username', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const target = await pool.query(`SELECT id, is_private FROM users WHERE username = $1`, [req.params.username]);
+    if (!target.rows[0]) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    const targetId = target.rows[0].id;
+    const isPrivate: boolean = target.rows[0].is_private;
+    const status = isPrivate ? 'pending' : 'accepted';
+
+    const inserted = await pool.query(
+      `INSERT INTO follows (follower_id, following_id, status) VALUES ($1, $2, $3)
+       ON CONFLICT (follower_id, following_id) DO NOTHING
+       RETURNING follower_id`,
+      [req.user!.id, targetId, status]
+    );
+
+    if (inserted.rows[0]) {
+      if (isPrivate) {
+        await createNotification(targetId, 'follow_request', req.user!.id, req.user!.id);
+      } else {
+        await createNotification(targetId, 'new_follower', req.user!.id, req.user!.id);
+      }
+    }
+
+    res.json({ following: !isPrivate, pending: isPrivate && !!inserted.rows[0] });
   } catch (err) {
     next(err);
   }
@@ -49,26 +147,14 @@ router.post('/:username', verifyJWT, async (req: Request, res: Response, next: N
  * @openapi
  * /api/follows/{username}:
  *   delete:
- *     summary: Unfollow a user
+ *     summary: Unfollow or cancel a follow request
  *     tags: [Follows]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: username
- *         required: true
- *         schema: { type: string }
- *     responses:
- *       200:
- *         description: Unfollowed
- *       404:
- *         description: User not found
  */
 router.delete('/:username', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [
-      req.params.username,
-    ]);
+    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
     if (!target.rows[0]) {
       res.status(404).json({ error: 'User not found' });
       return;
@@ -79,7 +165,7 @@ router.delete('/:username', verifyJWT, async (req: Request, res: Response, next:
       target.rows[0].id,
     ]);
 
-    res.json({ following: false });
+    res.json({ following: false, pending: false });
   } catch (err) {
     next(err);
   }
@@ -89,24 +175,12 @@ router.delete('/:username', verifyJWT, async (req: Request, res: Response, next:
  * @openapi
  * /api/follows/{username}/followers:
  *   get:
- *     summary: List followers of a user
+ *     summary: List accepted followers of a user
  *     tags: [Follows]
- *     parameters:
- *       - in: path
- *         name: username
- *         required: true
- *         schema: { type: string }
- *     responses:
- *       200:
- *         description: Followers list
- *       404:
- *         description: User not found
  */
 router.get('/:username/followers', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [
-      req.params.username,
-    ]);
+    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
     if (!target.rows[0]) {
       res.status(404).json({ error: 'User not found' });
       return;
@@ -116,7 +190,7 @@ router.get('/:username/followers', async (req: Request, res: Response, next: Nex
       `SELECT u.id, u.username, u.display_name, u.avatar_url
        FROM follows f
        JOIN users u ON u.id = f.follower_id
-       WHERE f.following_id = $1
+       WHERE f.following_id = $1 AND f.status = 'accepted'
        ORDER BY f.created_at DESC`,
       [target.rows[0].id]
     );
@@ -131,24 +205,12 @@ router.get('/:username/followers', async (req: Request, res: Response, next: Nex
  * @openapi
  * /api/follows/{username}/following:
  *   get:
- *     summary: List users that a user is following
+ *     summary: List users that a user is following (accepted only)
  *     tags: [Follows]
- *     parameters:
- *       - in: path
- *         name: username
- *         required: true
- *         schema: { type: string }
- *     responses:
- *       200:
- *         description: Following list
- *       404:
- *         description: User not found
  */
 router.get('/:username/following', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [
-      req.params.username,
-    ]);
+    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
     if (!target.rows[0]) {
       res.status(404).json({ error: 'User not found' });
       return;
@@ -158,7 +220,7 @@ router.get('/:username/following', async (req: Request, res: Response, next: Nex
       `SELECT u.id, u.username, u.display_name, u.avatar_url
        FROM follows f
        JOIN users u ON u.id = f.following_id
-       WHERE f.follower_id = $1
+       WHERE f.follower_id = $1 AND f.status = 'accepted'
        ORDER BY f.created_at DESC`,
       [target.rows[0].id]
     );

@@ -9,6 +9,15 @@ import userRoutes from './routes/user.routes.js';
 import questionRoutes from './routes/question.routes.js';
 import answerRoutes from './routes/answer.routes.js';
 import followRoutes from './routes/follow.routes.js';
+import commentRoutes from './routes/comment.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
+import feedRoutes from './routes/feed.routes.js';
+import searchRoutes from './routes/search.routes.js';
+import dmRoutes from './routes/dm.routes.js';
+import reportRoutes from './routes/report.routes.js';
+import blockRoutes from './routes/block.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+import uploadRoutes from './routes/upload.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 if (!process.env.JWT_SECRET) {
@@ -23,11 +32,7 @@ app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 
 app.get('/', (_req, res) => {
-  res.json({
-    message: 'ESN FM API',
-    status: 'running',
-    docs: '/docs',
-  });
+  res.json({ message: 'ESN FM API', status: 'running', docs: '/docs' });
 });
 
 app.use(
@@ -50,10 +55,7 @@ app.use(
       },
     },
   }),
-  apiReference({
-    content: swaggerSpec,
-    theme: 'default',
-  })
+  apiReference({ content: swaggerSpec, theme: 'default' })
 );
 
 app.use('/api/auth', authRoutes);
@@ -61,6 +63,15 @@ app.use('/api/users', userRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/answers', answerRoutes);
 app.use('/api/follows', followRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/feed', feedRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/dm', dmRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/blocks', blockRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/upload', uploadRoutes);
 
 app.use(errorHandler);
 

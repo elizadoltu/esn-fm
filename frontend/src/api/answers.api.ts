@@ -10,6 +10,11 @@ export interface FeedItem {
   answered_at: string;
   likes: number;
   liked_by_me: boolean;
+  comment_count: number;
+  // present in home feed items
+  author_username?: string;
+  author_display_name?: string;
+  author_avatar_url?: string;
 }
 
 export interface FeedResponse {

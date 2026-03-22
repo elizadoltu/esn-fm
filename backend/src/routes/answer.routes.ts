@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { pool } from '../db/pool.js';
 import { verifyJWT } from '../middleware/auth.js';
 import { postAnswerSchema } from '../validators/answer.validator.js';
+import { createNotification } from '../db/notifications.js';
 
 const router = Router();
 
@@ -22,7 +23,7 @@ const router = Router();
  *             required: [question_id, content]
  *             properties:
  *               question_id: { type: string, format: uuid }
- *               content: { type: string, maxLength: 1000 }
+ *               content: { type: string, maxLength: 500 }
  *     responses:
  *       201:
  *         description: Answer posted
@@ -36,7 +37,7 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
     const data = postAnswerSchema.parse(req.body);
 
     const qResult = await pool.query(
-      `SELECT recipient_id FROM questions WHERE id = $1 AND is_answered = FALSE`,
+      `SELECT recipient_id, sender_id FROM questions WHERE id = $1 AND is_answered = FALSE`,
       [data.question_id]
     );
 
@@ -51,7 +52,6 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    // Insert answer and mark question as answered in a transaction
     await pool.query('BEGIN');
     const aResult = await pool.query(
       `INSERT INTO answers (question_id, author_id, content)
@@ -61,6 +61,11 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
     );
     await pool.query(`UPDATE questions SET is_answered = TRUE WHERE id = $1`, [data.question_id]);
     await pool.query('COMMIT');
+
+    // Notify the question sender (if they exist — anonymous senders have no account)
+    if (question.sender_id) {
+      await createNotification(question.sender_id, 'new_answer', aResult.rows[0].id, req.user!.id);
+    }
 
     res.status(201).json(aResult.rows[0]);
   } catch (err) {
@@ -112,9 +117,7 @@ router.get('/:username', async (req: Request, res: Response, next: NextFunction)
     if (authHeader?.startsWith('Bearer ')) {
       try {
         const { default: jwt } = await import('jsonwebtoken');
-        const payload = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET!) as {
-          id: string;
-        };
+        const payload = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET!) as { id: string };
         viewerId = payload.id;
       } catch {
         // anonymous viewer
@@ -130,11 +133,13 @@ router.get('/:username', async (req: Request, res: Response, next: NextFunction)
          a.id            AS answer_id,
          a.content       AS answer,
          a.created_at    AS answered_at,
-         COUNT(l.answer_id)::int  AS likes,
-         BOOL_OR(l.user_id = $3) AS liked_by_me
+         COUNT(DISTINCT l.user_id)::int   AS likes,
+         BOOL_OR(l.user_id = $3)          AS liked_by_me,
+         COUNT(DISTINCT c.id)::int        AS comment_count
        FROM questions q
        JOIN answers a ON a.question_id = q.id
        LEFT JOIN likes l ON l.answer_id = a.id
+       LEFT JOIN comments c ON c.answer_id = a.id AND c.is_deleted = FALSE
        WHERE q.recipient_id = $1
        GROUP BY q.id, q.content, q.sender_name, q.created_at,
                 a.id, a.content, a.created_at
@@ -221,6 +226,13 @@ router.post('/:id/like', verifyJWT, async (req: Request, res: Response, next: Ne
         req.user!.id,
         req.params.id,
       ]);
+
+      // Notify answer author
+      const answerResult = await pool.query(`SELECT author_id FROM answers WHERE id = $1`, [req.params.id]);
+      if (answerResult.rows[0]) {
+        await createNotification(answerResult.rows[0].author_id, 'new_like', req.params.id, req.user!.id);
+      }
+
       res.json({ liked: true });
     }
   } catch (err) {

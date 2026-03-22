@@ -16,15 +16,18 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 
+const MAX_CHARS = 300;
+
 export default function AskPage() {
   const { username } = useParams<{ username: string }>();
-  const { user: me } = useAuth();
+  const { user: me, isAuthenticated } = useAuth();
 
   const { data: profile } = useProfile(username ?? "");
 
   const [content, setContent] = useState("");
   const [senderName, setSenderName] = useState("");
-  const [anonymous, setAnonymous] = useState(true);
+  const [anonymous, setAnonymous] = useState(!isAuthenticated);
+  const [showInFeed, setShowInFeed] = useState(isAuthenticated);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +42,7 @@ export default function AskPage() {
         recipient_username: username,
         content,
         sender_name: anonymous ? undefined : senderName || me?.display_name,
+        show_in_feed: showInFeed,
       });
       setSubmitted(true);
     } catch (err: unknown) {
@@ -79,12 +83,12 @@ export default function AskPage() {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="What would you like to ask?"
-                maxLength={500}
+                maxLength={MAX_CHARS}
                 rows={4}
                 required
               />
-              <p className="text-right text-xs text-muted-foreground">
-                {content.length}/500
+              <p className={`text-right text-xs ${content.length >= MAX_CHARS ? "text-destructive" : "text-muted-foreground"}`}>
+                {content.length}/{MAX_CHARS}
               </p>
             </div>
 
@@ -93,7 +97,10 @@ export default function AskPage() {
                 id="anonymous"
                 type="checkbox"
                 checked={anonymous}
-                onChange={(e) => setAnonymous(e.target.checked)}
+                onChange={(e) => {
+                  setAnonymous(e.target.checked);
+                  if (e.target.checked) setShowInFeed(false);
+                }}
                 className="h-4 w-4 rounded border-input accent-primary"
               />
               <Label htmlFor="anonymous" className="cursor-pointer font-normal">
@@ -113,6 +120,28 @@ export default function AskPage() {
                   maxLength={60}
                 />
               </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <input
+                id="showInFeed"
+                type="checkbox"
+                checked={showInFeed}
+                onChange={(e) => setShowInFeed(e.target.checked)}
+                disabled={anonymous}
+                className="h-4 w-4 rounded border-input accent-primary disabled:opacity-50"
+              />
+              <Label
+                htmlFor="showInFeed"
+                className={`cursor-pointer font-normal ${anonymous ? "opacity-50" : ""}`}
+              >
+                Show this question on the public feed
+              </Label>
+            </div>
+            {anonymous && (
+              <p className="text-xs text-muted-foreground -mt-2">
+                Anonymous questions are hidden from public feeds.
+              </p>
             )}
 
             {error && (

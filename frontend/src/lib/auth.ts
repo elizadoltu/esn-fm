@@ -8,7 +8,12 @@ export interface StoredUser {
   display_name: string;
   bio: string;
   avatar_url: string;
+  cover_image_url: string;
+  location: string | null;
+  website: string | null;
   allow_anonymous_questions: boolean;
+  is_private: boolean;
+  role: "user" | "moderator" | "admin";
 }
 
 export function getToken(): string | null {
