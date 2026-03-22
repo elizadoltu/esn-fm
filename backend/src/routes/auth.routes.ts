@@ -110,7 +110,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
       return;
     }
 
-    const { password_hash: _omit, ...safeUser } = user;
+    const { password_hash: _, ...safeUser } = user;
     const token = jwt.sign(
       { id: safeUser.id, username: safeUser.username },
       process.env.JWT_SECRET!,
