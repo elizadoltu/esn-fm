@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { CheckCircle2 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/context/useAuth";
@@ -61,7 +61,7 @@ export default function AskPage() {
           {profile?.display_name ?? username} will see it in their inbox.
         </p>
         <Button variant="outline" size="sm" asChild>
-          <a href={`/${username}`}>Back to profile</a>
+          <Link to={`/${username}`}>Back to profile</Link>
         </Button>
       </div>
     );
