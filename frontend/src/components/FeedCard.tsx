@@ -156,7 +156,9 @@ export default function FeedCard({
       setCommentText("");
       setReplyTo(null);
     } catch (err) {
-      setCommentError(extractApiError(err, "Failed to post comment. Try again."));
+      setCommentError(
+        extractApiError(err, "Failed to post comment. Try again.")
+      );
     }
   }
 

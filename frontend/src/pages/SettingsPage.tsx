@@ -124,7 +124,9 @@ export default function SettingsPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err: unknown) {
-      setError(extractApiError(err, "Failed to save settings. Please try again."));
+      setError(
+        extractApiError(err, "Failed to save settings. Please try again.")
+      );
     } finally {
       setLoading(false);
     }

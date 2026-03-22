@@ -33,7 +33,9 @@ export default function QuestionCard({
       setOpen(false);
       setText("");
     } catch (err) {
-      setError(extractApiError(err, "Failed to post answer. Please try again."));
+      setError(
+        extractApiError(err, "Failed to post answer. Please try again.")
+      );
     }
   }
 
