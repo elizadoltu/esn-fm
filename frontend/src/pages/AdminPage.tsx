@@ -3,7 +3,7 @@ import { Users, Flag, BarChart3, Search } from "lucide-react";
 import { useAdminStats, useAdminUsers, useUpdateUserRole, useAdminReports, useActionReport } from "@/hooks/useAdmin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 type Tab = "stats" | "users" | "reports";
 
