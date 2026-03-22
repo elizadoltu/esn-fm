@@ -129,7 +129,10 @@ router.post('/forgot-password', async (req: Request, res: Response, next: NextFu
       return;
     }
 
-    const userResult = await pool.query(`SELECT id FROM users WHERE email = $1 AND (is_deleted = FALSE OR is_deleted IS NULL)`, [email]);
+    const userResult = await pool.query(
+      `SELECT id FROM users WHERE email = $1 AND (is_deleted = FALSE OR is_deleted IS NULL)`,
+      [email]
+    );
     // Always respond ok to prevent email enumeration
     if (!userResult.rows[0]) {
       res.json({ ok: true });

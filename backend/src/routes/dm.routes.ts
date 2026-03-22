@@ -18,19 +18,28 @@ router.get('/unread-count', verifyJWT, async (req: Request, res: Response, next:
   }
 });
 
-router.patch('/:username/read', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const other = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
-    if (!other.rows[0]) { res.status(404).json({ error: 'User not found' }); return; }
-    await pool.query(
-      `UPDATE direct_messages SET is_read = TRUE WHERE recipient_id = $1 AND sender_id = $2 AND is_read = FALSE`,
-      [req.user!.id, other.rows[0].id]
-    );
-    res.json({ ok: true });
-  } catch (err) {
-    next(err);
+router.patch(
+  '/:username/read',
+  verifyJWT,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const other = await pool.query(`SELECT id FROM users WHERE username = $1`, [
+        req.params.username,
+      ]);
+      if (!other.rows[0]) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+      await pool.query(
+        `UPDATE direct_messages SET is_read = TRUE WHERE recipient_id = $1 AND sender_id = $2 AND is_read = FALSE`,
+        [req.user!.id, other.rows[0].id]
+      );
+      res.json({ ok: true });
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 /**
  * @openapi
