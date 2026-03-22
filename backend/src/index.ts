@@ -40,7 +40,12 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'],
         imgSrc: ["'self'", 'data:', 'https:'],
-        connectSrc: ["'self'", 'https://cdn.jsdelivr.net', 'https://proxy.scalar.com', 'https://api.scalar.com'],
+        connectSrc: [
+          "'self'",
+          'https://cdn.jsdelivr.net',
+          'https://proxy.scalar.com',
+          'https://api.scalar.com',
+        ],
         workerSrc: ["'self'", 'blob:'],
       },
     },
