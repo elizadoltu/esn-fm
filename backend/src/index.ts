@@ -1,41 +1,82 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import swaggerSpec from './docs/swagger.js';
 import { apiReference } from '@scalar/express-api-reference';
 
+import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
+import questionRoutes from './routes/question.routes.js';
+import answerRoutes from './routes/answer.routes.js';
+import followRoutes from './routes/follow.routes.js';
+import commentRoutes from './routes/comment.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
+import feedRoutes from './routes/feed.routes.js';
+import searchRoutes from './routes/search.routes.js';
+import dmRoutes from './routes/dm.routes.js';
+import reportRoutes from './routes/report.routes.js';
+import blockRoutes from './routes/block.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+import uploadRoutes from './routes/upload.routes.js';
+import { errorHandler } from './middleware/errorHandler.js';
+
+if (!process.env.JWT_SECRET) {
+  throw new Error('[startup] JWT_SECRET environment variable is required');
+}
 
 const app = express();
+const allowedOrigins = (process.env.CORS_ORIGINS ?? 'http://localhost:5173').split(',');
 
-app.use(cors());
+app.use(helmet());
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.json({
-    message: 'ESN HR App API',
-    status: 'running',
-    endpoints: {
-      docs: '/docs',
-      users: '/api/users',
-    },
-  });
+app.get('/', (_req, res) => {
+  res.json({ message: 'ESN FM API', status: 'running', docs: '/docs' });
 });
 
 app.use(
   '/docs',
-  apiReference({
-    spec: {
-      content: swaggerSpec,
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: [
+          "'self'",
+          'https://cdn.jsdelivr.net',
+          'https://proxy.scalar.com',
+          'https://api.scalar.com',
+        ],
+        workerSrc: ["'self'", 'blob:'],
+      },
     },
-    theme: 'default',
-  })
+  }),
+  apiReference({ content: swaggerSpec, theme: 'default' })
 );
 
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/questions', questionRoutes);
+app.use('/api/answers', answerRoutes);
+app.use('/api/follows', followRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/feed', feedRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/dm', dmRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/blocks', blockRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/upload', uploadRoutes);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Docs: http://localhost:${PORT}/docs`);
-  console.log(`API: http://localhost:${PORT}/api/users`);
+  console.log(`[server] running on http://localhost:${PORT}`);
+  console.log(`[server] docs at http://localhost:${PORT}/docs`);
 });
