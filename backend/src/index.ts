@@ -35,7 +35,7 @@ app.use(
   apiReference({
     spec: { content: swaggerSpec },
     theme: 'default',
-  }),
+  })
 );
 
 app.use('/api/auth', authRoutes);

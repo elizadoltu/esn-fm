@@ -27,7 +27,7 @@ router.get('/:username', async (req: Request, res: Response, next: NextFunction)
     const result = await pool.query(
       `SELECT id, username, display_name, bio, avatar_url, allow_anonymous_questions, created_at
        FROM users WHERE username = $1`,
-      [req.params.username],
+      [req.params.username]
     );
 
     if (!result.rows[0]) {
@@ -82,7 +82,7 @@ router.patch('/me', verifyJWT, async (req: Request, res: Response, next: NextFun
     const result = await pool.query(
       `UPDATE users SET ${setClause} WHERE id = $1
        RETURNING id, username, display_name, bio, avatar_url, allow_anonymous_questions`,
-      [req.user!.id, ...values],
+      [req.user!.id, ...values]
     );
 
     res.json(result.rows[0]);

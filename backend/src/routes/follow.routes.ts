@@ -36,7 +36,7 @@ router.post('/:username', verifyJWT, async (req: Request, res: Response, next: N
     await pool.query(
       `INSERT INTO follows (follower_id, following_id) VALUES ($1, $2)
        ON CONFLICT DO NOTHING`,
-      [req.user!.id, target.rows[0].id],
+      [req.user!.id, target.rows[0].id]
     );
 
     res.json({ following: true });
@@ -74,10 +74,10 @@ router.delete('/:username', verifyJWT, async (req: Request, res: Response, next:
       return;
     }
 
-    await pool.query(
-      `DELETE FROM follows WHERE follower_id = $1 AND following_id = $2`,
-      [req.user!.id, target.rows[0].id],
-    );
+    await pool.query(`DELETE FROM follows WHERE follower_id = $1 AND following_id = $2`, [
+      req.user!.id,
+      target.rows[0].id,
+    ]);
 
     res.json({ following: false });
   } catch (err) {
@@ -118,7 +118,7 @@ router.get('/:username/followers', async (req: Request, res: Response, next: Nex
        JOIN users u ON u.id = f.follower_id
        WHERE f.following_id = $1
        ORDER BY f.created_at DESC`,
-      [target.rows[0].id],
+      [target.rows[0].id]
     );
 
     res.json(result.rows);
@@ -160,7 +160,7 @@ router.get('/:username/following', async (req: Request, res: Response, next: Nex
        JOIN users u ON u.id = f.following_id
        WHERE f.follower_id = $1
        ORDER BY f.created_at DESC`,
-      [target.rows[0].id],
+      [target.rows[0].id]
     );
 
     res.json(result.rows);

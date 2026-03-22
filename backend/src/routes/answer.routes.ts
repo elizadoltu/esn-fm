@@ -37,7 +37,7 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
 
     const qResult = await pool.query(
       `SELECT recipient_id FROM questions WHERE id = $1 AND is_answered = FALSE`,
-      [data.question_id],
+      [data.question_id]
     );
 
     const question = qResult.rows[0];
@@ -57,7 +57,7 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
       `INSERT INTO answers (question_id, author_id, content)
        VALUES ($1, $2, $3)
        RETURNING id, question_id, author_id, content, created_at`,
-      [data.question_id, req.user!.id, data.content],
+      [data.question_id, req.user!.id, data.content]
     );
     await pool.query(`UPDATE questions SET is_answered = TRUE WHERE id = $1`, [data.question_id]);
     await pool.query('COMMIT');
@@ -140,7 +140,7 @@ router.get('/:username', async (req: Request, res: Response, next: NextFunction)
                 a.id, a.content, a.created_at
        ORDER BY a.created_at DESC
        LIMIT $2 OFFSET $4`,
-      [userId, limit, viewerId, offset],
+      [userId, limit, viewerId, offset]
     );
 
     res.json({ items: result.rows, limit, offset });
@@ -172,7 +172,7 @@ router.delete('/:id', verifyJWT, async (req: Request, res: Response, next: NextF
   try {
     const result = await pool.query(
       `DELETE FROM answers WHERE id = $1 AND author_id = $2 RETURNING id`,
-      [req.params.id, req.user!.id],
+      [req.params.id, req.user!.id]
     );
 
     if (!result.rows[0]) {
@@ -205,10 +205,10 @@ router.delete('/:id', verifyJWT, async (req: Request, res: Response, next: NextF
  */
 router.post('/:id/like', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const existing = await pool.query(
-      `SELECT 1 FROM likes WHERE user_id = $1 AND answer_id = $2`,
-      [req.user!.id, req.params.id],
-    );
+    const existing = await pool.query(`SELECT 1 FROM likes WHERE user_id = $1 AND answer_id = $2`, [
+      req.user!.id,
+      req.params.id,
+    ]);
 
     if (existing.rows[0]) {
       await pool.query(`DELETE FROM likes WHERE user_id = $1 AND answer_id = $2`, [

@@ -33,7 +33,7 @@ try {
 
   // 2. Load which migrations have already run
   const { rows: applied } = await pool.query<{ filename: string }>(
-    'SELECT filename FROM schema_migrations ORDER BY filename',
+    'SELECT filename FROM schema_migrations ORDER BY filename'
   );
   const appliedSet = new Set(applied.map((r) => r.filename));
 

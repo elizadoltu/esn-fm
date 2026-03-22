@@ -51,15 +51,13 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
       `INSERT INTO users (email, username, password_hash, display_name)
        VALUES ($1, $2, $3, $4)
        RETURNING id, email, username, display_name, bio, avatar_url, allow_anonymous_questions, created_at`,
-      [data.email, data.username, hash, data.display_name],
+      [data.email, data.username, hash, data.display_name]
     );
 
     const user = result.rows[0];
-    const token = jwt.sign(
-      { id: user.id, username: user.username },
-      process.env.JWT_SECRET!,
-      { expiresIn: '7d' },
-    );
+    const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET!, {
+      expiresIn: '7d',
+    });
 
     res.status(201).json({ token, user });
   } catch (err: unknown) {
@@ -101,7 +99,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     const result = await pool.query(
       `SELECT id, email, username, display_name, bio, avatar_url, allow_anonymous_questions, password_hash
        FROM users WHERE email = $1`,
-      [data.email],
+      [data.email]
     );
 
     const user = result.rows[0];
@@ -114,7 +112,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     const token = jwt.sign(
       { id: safeUser.id, username: safeUser.username },
       process.env.JWT_SECRET!,
-      { expiresIn: '7d' },
+      { expiresIn: '7d' }
     );
 
     res.json({ token, user: safeUser });

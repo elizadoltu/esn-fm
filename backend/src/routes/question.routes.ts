@@ -51,7 +51,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
     const recipientResult = await pool.query(
       `SELECT id, allow_anonymous_questions FROM users WHERE username = $1`,
-      [data.recipient_username],
+      [data.recipient_username]
     );
 
     const recipient = recipientResult.rows[0];
@@ -70,7 +70,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       `INSERT INTO questions (recipient_id, sender_id, sender_name, content)
        VALUES ($1, $2, $3, $4)
        RETURNING id, recipient_id, sender_id, sender_name, content, is_answered, created_at`,
-      [recipient.id, senderId, data.sender_name ?? null, data.content],
+      [recipient.id, senderId, data.sender_name ?? null, data.content]
     );
 
     res.status(201).json(result.rows[0]);
@@ -100,7 +100,7 @@ router.get('/inbox', verifyJWT, async (req: Request, res: Response, next: NextFu
        FROM questions
        WHERE recipient_id = $1 AND is_answered = FALSE
        ORDER BY created_at DESC`,
-      [req.user!.id],
+      [req.user!.id]
     );
 
     res.json(result.rows);
@@ -134,7 +134,7 @@ router.delete('/:id', verifyJWT, async (req: Request, res: Response, next: NextF
       `DELETE FROM questions
        WHERE id = $1 AND recipient_id = $2
        RETURNING id`,
-      [req.params.id, req.user!.id],
+      [req.params.id, req.user!.id]
     );
 
     if (!result.rows[0]) {
