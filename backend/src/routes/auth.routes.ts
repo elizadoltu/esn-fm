@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { Router, Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -141,9 +142,7 @@ router.post('/forgot-password', async (req: Request, res: Response, next: NextFu
 
     const userId = userResult.rows[0].id;
     // Generate a secure random token
-    const token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
+    const token = randomBytes(32).toString('hex');
 
     await pool.query(
       `INSERT INTO password_reset_tokens (user_id, token) VALUES ($1, $2)
