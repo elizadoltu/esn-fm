@@ -47,3 +47,7 @@ export async function markAllRead(): Promise<void> {
 export async function markRead(id: string): Promise<void> {
   await client.patch(`/api/notifications/${id}/read`);
 }
+
+export async function deleteNotification(id: string): Promise<void> {
+  await client.delete(`/api/notifications/${id}`);
+}

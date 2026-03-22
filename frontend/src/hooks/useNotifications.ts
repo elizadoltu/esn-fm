@@ -4,6 +4,7 @@ import {
   getUnreadCount,
   markAllRead,
   markRead,
+  deleteNotification,
 } from "@/api/notifications.api";
 import { getToken } from "@/lib/auth";
 
@@ -13,7 +14,7 @@ export function useNotifications() {
     queryKey: ["notifications"],
     queryFn: () => getNotifications(),
     enabled,
-    refetchInterval: enabled ? 30_000 : false,
+    refetchInterval: enabled ? 10_000 : false,
   });
 }
 
@@ -23,7 +24,7 @@ export function useUnreadCount() {
     queryKey: ["notifications", "unread-count"],
     queryFn: getUnreadCount,
     enabled,
-    refetchInterval: enabled ? 30_000 : false,
+    refetchInterval: enabled ? 10_000 : false,
   });
 }
 
@@ -39,6 +40,14 @@ export function useMarkRead() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: markRead,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+}
+
+export function useDeleteNotification() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteNotification(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
 }

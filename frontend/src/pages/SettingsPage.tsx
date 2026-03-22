@@ -1,16 +1,27 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/useAuth";
-import { updateProfile, getMe } from "@/api/users.api";
+import { updateProfile, getMe, deleteAccount } from "@/api/users.api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Bell } from "lucide-react";
+import {
+  getBrowserNotifEnabled,
+  requestAndEnable,
+  setBrowserNotifEnabled,
+} from "@/hooks/useBrowserNotifications";
 import ImageUpload from "@/components/ImageUpload";
 
 export default function SettingsPage() {
-  const { login: saveLogin, token } = useAuth();
+  const { login: saveLogin, token, logout } = useAuth();
+  const navigate = useNavigate();
+  const [notifEnabled, setNotifEnabled] = useState(getBrowserNotifEnabled);
+  const [notifPermission, setNotifPermission] = useState<
+    NotificationPermission | "unsupported"
+  >("Notification" in globalThis ? Notification.permission : "unsupported");
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +60,43 @@ export default function SettingsPage() {
 
   function handleBool(name: string, value: boolean) {
     setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const deleteLabel = deleteConfirm
+    ? "Confirm — cannot be undone"
+    : "Deactivate account";
+
+  async function handleDeleteAccount() {
+    if (!deleteConfirm) {
+      setDeleteConfirm(true);
+      return;
+    }
+    setDeleting(true);
+    try {
+      await deleteAccount();
+      logout();
+      navigate("/login");
+    } catch {
+      setError("Failed to deactivate account.");
+      setDeleting(false);
+      setDeleteConfirm(false);
+    }
+  }
+
+  async function handleEnableNotif() {
+    const granted = await requestAndEnable();
+    setNotifEnabled(granted);
+    setNotifPermission(
+      "Notification" in globalThis ? Notification.permission : "unsupported"
+    );
+  }
+
+  function handleDisableNotif() {
+    setBrowserNotifEnabled(false);
+    setNotifEnabled(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -220,6 +268,79 @@ export default function SettingsPage() {
                 </p>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Notifications */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Notifications</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-3">
+              <input
+                id="browser_notif"
+                type="checkbox"
+                checked={notifEnabled}
+                disabled={
+                  notifPermission === "denied" ||
+                  notifPermission === "unsupported"
+                }
+                onChange={(e) =>
+                  e.target.checked ? handleEnableNotif() : handleDisableNotif()
+                }
+                className="mt-0.5 h-4 w-4 rounded border-input accent-primary disabled:opacity-50"
+              />
+              <div>
+                <Label
+                  htmlFor="browser_notif"
+                  className="cursor-pointer flex items-center gap-1.5"
+                >
+                  <Bell className="h-4 w-4" />
+                  Browser notifications
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {notifPermission === "denied"
+                    ? "Notifications are blocked in your browser settings. Please allow them manually."
+                    : notifPermission === "unsupported"
+                      ? "Your browser does not support notifications."
+                      : "Get notified instantly when you receive questions, answers, or messages."}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Danger Zone */}
+        <Card className="border-destructive/40">
+          <CardHeader>
+            <CardTitle className="text-base text-destructive">
+              Danger Zone
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-3">
+              Deactivating your account anonymises your profile. Your questions
+              and answers remain but your name shows as "Deleted User".
+            </p>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={handleDeleteAccount}
+              disabled={deleting}
+            >
+              {deleting ? "Deactivating…" : deleteLabel}
+            </Button>
+            {deleteConfirm && !deleting && (
+              <button
+                type="button"
+                className="ml-3 text-sm text-muted-foreground hover:underline"
+                onClick={() => setDeleteConfirm(false)}
+              >
+                Cancel
+              </button>
+            )}
           </CardContent>
         </Card>
 

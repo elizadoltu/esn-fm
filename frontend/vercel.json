@@ -3,37 +3,7 @@
     "deploymentEnabled": false
   },
   "outputDirectory": "dist",
-   "rewrites":  [
-      {"source": "/(.*)", "destination": "/"}
-    ],
-    "headers": [
-    {
-      "source": "/public/(.*)",  
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"  
-        }
-      ]
-    },
-    {
-      "source": "/src/fonts/(.*)",    
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/_next/static/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    }
-    
+  "routes": [
+    { "src": "/[^.]+", "dest": "/", "status": 200 }
   ]
 }

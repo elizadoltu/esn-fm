@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/useAuth";
+import { useSSE } from "@/hooks/useSSE";
 import Navbar from "@/components/Navbar";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
@@ -13,6 +14,8 @@ import MessagesPage from "@/pages/MessagesPage";
 import ConversationPage from "@/pages/ConversationPage";
 import SettingsPage from "@/pages/SettingsPage";
 import AdminPage from "@/pages/AdminPage";
+import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 
 function RequireAuth({ children }: Readonly<{ children: React.ReactNode }>) {
   const { isAuthenticated } = useAuth();
@@ -30,6 +33,7 @@ function RequireAdmin({ children }: Readonly<{ children: React.ReactNode }>) {
 
 export default function App() {
   const { isAuthenticated } = useAuth();
+  useSSE();
 
   return (
     <div className="min-h-screen bg-background">
@@ -40,6 +44,8 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/explore" element={<ExplorePage />} />
         <Route path="/ask/:username" element={<AskPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/:username" element={<ProfilePage />} />
 
         {/* Protected */}

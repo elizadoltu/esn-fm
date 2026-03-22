@@ -91,6 +91,21 @@ function CommentItem({
                 </p>
                 <p className="text-sm text-foreground">{reply.content}</p>
               </div>
+              {!reply.is_deleted && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() =>
+                    onReply(
+                      comment.id,
+                      reply.author.display_name ?? reply.author.username ?? ""
+                    )
+                  }
+                >
+                  Reply
+                </Button>
+              )}
               {user?.id === reply.author.id && !reply.is_deleted && (
                 <Button
                   variant="ghost"
@@ -228,7 +243,10 @@ export default function FeedCard({
                 key={comment.id}
                 comment={comment}
                 onDelete={(id) => deleteComment.mutate(id)}
-                onReply={(parentId, name) => setReplyTo({ id: parentId, name })}
+                onReply={(parentId, name) => {
+                  setReplyTo({ id: parentId, name });
+                  setCommentText(`@${name} `);
+                }}
               />
             ))}
 

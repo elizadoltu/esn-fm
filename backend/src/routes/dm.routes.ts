@@ -2,9 +2,44 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { pool } from '../db/pool.js';
 import { verifyJWT } from '../middleware/auth.js';
 import { sendDmSchema } from '../validators/dm.validator.js';
-import { createNotification } from '../db/notifications.js';
+import { sendSSE } from '../lib/sse.js';
 
 const router = Router();
+
+router.get('/unread-count', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT(*)::int AS count FROM direct_messages WHERE recipient_id = $1 AND is_read = FALSE`,
+      [req.user!.id]
+    );
+    res.json({ count: result.rows[0].count });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch(
+  '/:username/read',
+  verifyJWT,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const other = await pool.query(`SELECT id FROM users WHERE username = $1`, [
+        req.params.username,
+      ]);
+      if (!other.rows[0]) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+      await pool.query(
+        `UPDATE direct_messages SET is_read = TRUE WHERE recipient_id = $1 AND sender_id = $2 AND is_read = FALSE`,
+        [req.user!.id, other.rows[0].id]
+      );
+      res.json({ ok: true });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 /**
  * @openapi
@@ -65,8 +100,7 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
       [req.user!.id, recipientId, data.content]
     );
 
-    await createNotification(recipientId, 'new_dm', result.rows[0].id, req.user!.id);
-
+    sendSSE(recipientId, 'dm', { from: req.user!.username });
     res.status(201).json(result.rows[0]);
   } catch (err) {
     next(err);
