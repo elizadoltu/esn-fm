@@ -113,9 +113,8 @@ export default function Navbar() {
                     asChild
                     className={isActive(to) ? activeClass : inactiveClass}
                   >
-                    <Link to={to} className="flex items-center gap-1.5">
+                    <Link to={to} title={label}>
                       {icon}
-                      <span className="hidden lg:inline">{label}</span>
                     </Link>
                   </Button>
                 ))}
@@ -126,7 +125,6 @@ export default function Navbar() {
                   className="text-destructive hover:text-destructive hover:bg-destructive/10"
                 >
                   <LogOut className="h-4 w-4" />
-                  <span className="hidden lg:inline ml-1.5">Logout</span>
                 </Button>
               </>
             ) : (

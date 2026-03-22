@@ -97,7 +97,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     const data = loginSchema.parse(req.body);
 
     const result = await pool.query(
-      `SELECT id, email, username, display_name, bio, avatar_url, allow_anonymous_questions, password_hash
+      `SELECT id, email, username, display_name, bio, avatar_url, allow_anonymous_questions, role, password_hash
        FROM users WHERE email = $1`,
       [data.email]
     );
