@@ -87,7 +87,9 @@ export default function AskPage() {
                 rows={4}
                 required
               />
-              <p className={`text-right text-xs ${content.length >= MAX_CHARS ? "text-destructive" : "text-muted-foreground"}`}>
+              <p
+                className={`text-right text-xs ${content.length >= MAX_CHARS ? "text-destructive" : "text-muted-foreground"}`}
+              >
                 {content.length}/{MAX_CHARS}
               </p>
             </div>

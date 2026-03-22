@@ -13,7 +13,11 @@ export default function HomePage() {
   const like = useHomeFeedLike();
 
   if (isLoading) {
-    return <div className="py-16 text-center text-muted-foreground">Loading feed…</div>;
+    return (
+      <div className="py-16 text-center text-muted-foreground">
+        Loading feed…
+      </div>
+    );
   }
 
   const items = feedData?.items ?? [];

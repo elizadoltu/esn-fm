@@ -25,8 +25,13 @@ export function useAdminUsers(params: {
 export function useUpdateUserRole() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, role }: { id: string; role: "user" | "moderator" | "admin" }) =>
-      updateUserRole(id, role),
+    mutationFn: ({
+      id,
+      role,
+    }: {
+      id: string;
+      role: "user" | "moderator" | "admin";
+    }) => updateUserRole(id, role),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
   });
 }
@@ -41,8 +46,13 @@ export function useAdminReports(params: { status?: string; offset?: number }) {
 export function useActionReport() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: "reviewed" | "actioned" }) =>
-      actionReport(id, status),
+    mutationFn: ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: "reviewed" | "actioned";
+    }) => actionReport(id, status),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "reports"] }),
   });
 }

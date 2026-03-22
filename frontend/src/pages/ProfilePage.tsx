@@ -78,7 +78,9 @@ function FollowModal({
         {/* List */}
         <div className="max-h-80 overflow-y-auto p-2">
           {isLoading && (
-            <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Loading…
+            </p>
           )}
           {!isLoading && list.length === 0 && (
             <p className="py-8 text-center text-sm text-muted-foreground">
@@ -116,18 +118,24 @@ function FollowModal({
 export default function ProfilePage() {
   const { username } = useParams<{ username: string }>();
   const { user: me, isAuthenticated } = useAuth();
-  const { data: profile, isLoading: profileLoading } = useProfile(username ?? "");
+  const { data: profile, isLoading: profileLoading } = useProfile(
+    username ?? ""
+  );
   const { data: feedData, isLoading: feedLoading } = useFeed(username ?? "");
   const like = useLike(username ?? "");
   const followToggle = useFollowToggle(username ?? "");
   const [followModal, setFollowModal] = useState<ModalTab | null>(null);
 
   if (profileLoading) {
-    return <div className="py-16 text-center text-muted-foreground">Loading…</div>;
+    return (
+      <div className="py-16 text-center text-muted-foreground">Loading…</div>
+    );
   }
 
   if (!profile) {
-    return <div className="py-16 text-center text-destructive">User not found.</div>;
+    return (
+      <div className="py-16 text-center text-destructive">User not found.</div>
+    );
   }
 
   const isOwner = me?.username === username;
@@ -140,7 +148,11 @@ export default function ProfilePage() {
       {/* Cover image */}
       {profile.cover_image_url && (
         <div className="mb-0 -mx-4 h-32 overflow-hidden rounded-t-lg sm:mx-0">
-          <img src={profile.cover_image_url} alt="Cover" className="h-full w-full object-cover" />
+          <img
+            src={profile.cover_image_url}
+            alt="Cover"
+            className="h-full w-full object-cover"
+          />
         </div>
       )}
 
@@ -167,7 +179,9 @@ export default function ProfilePage() {
                   </span>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">@{profile.username}</p>
+              <p className="text-sm text-muted-foreground">
+                @{profile.username}
+              </p>
               {profile.bio && <p className="mt-2 text-sm">{profile.bio}</p>}
 
               <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
@@ -197,7 +211,9 @@ export default function ProfilePage() {
                   onClick={() => setFollowModal("followers")}
                   className="hover:underline text-left"
                 >
-                  <strong className="text-foreground">{profile.follower_count}</strong>{" "}
+                  <strong className="text-foreground">
+                    {profile.follower_count}
+                  </strong>{" "}
                   <span className="text-muted-foreground">followers</span>
                 </button>
                 <button
@@ -205,11 +221,15 @@ export default function ProfilePage() {
                   onClick={() => setFollowModal("following")}
                   className="hover:underline text-left"
                 >
-                  <strong className="text-foreground">{profile.following_count}</strong>{" "}
+                  <strong className="text-foreground">
+                    {profile.following_count}
+                  </strong>{" "}
                   <span className="text-muted-foreground">following</span>
                 </button>
                 <span>
-                  <strong className="text-foreground">{profile.answer_count}</strong>{" "}
+                  <strong className="text-foreground">
+                    {profile.answer_count}
+                  </strong>{" "}
                   <span className="text-muted-foreground">answers</span>
                 </span>
               </div>
@@ -235,9 +255,19 @@ export default function ProfilePage() {
                 {isAuthenticated && (
                   <>
                     <Button
-                      variant={profile.is_following || profile.is_pending ? "outline" : "secondary"}
+                      variant={
+                        profile.is_following || profile.is_pending
+                          ? "outline"
+                          : "secondary"
+                      }
                       size="sm"
-                      onClick={() => followToggle.mutate(profile.is_following || profile.is_pending ? "unfollow" : "follow")}
+                      onClick={() =>
+                        followToggle.mutate(
+                          profile.is_following || profile.is_pending
+                            ? "unfollow"
+                            : "follow"
+                        )
+                      }
                       disabled={followToggle.isPending}
                     >
                       <Users className="h-4 w-4 mr-1" />
@@ -272,16 +302,20 @@ export default function ProfilePage() {
         {profile.is_private && !isOwner && !profile.is_following ? (
           <div className="py-16 flex flex-col items-center gap-3 text-muted-foreground">
             <Lock className="h-10 w-10 opacity-30" />
-            <p className="font-medium text-foreground">This account is private</p>
+            <p className="font-medium text-foreground">
+              This account is private
+            </p>
             <p className="text-sm text-center">
               Follow this account to see their answers.
             </p>
           </div>
         ) : null}
 
-        {(!profile.is_private || isOwner || profile.is_following) && (
-          feedLoading ? (
-            <div className="py-8 text-center text-muted-foreground">Loading feed…</div>
+        {(!profile.is_private || isOwner || profile.is_following) &&
+          (feedLoading ? (
+            <div className="py-8 text-center text-muted-foreground">
+              Loading feed…
+            </div>
           ) : (
             <div className="space-y-4">
               {feedData?.items.map((item) => (
@@ -298,8 +332,7 @@ export default function ProfilePage() {
                 </p>
               )}
             </div>
-          )
-        )}
+          ))}
       </div>
     </div>
   );

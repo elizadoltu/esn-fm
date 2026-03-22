@@ -41,33 +41,52 @@ export default function Navbar() {
 
   function isActive(path: string) {
     if (path === "/home") return location.pathname === "/home";
-    if (path.startsWith("/@")) return location.pathname === `/${user?.username}`;
+    if (path.startsWith("/@"))
+      return location.pathname === `/${user?.username}`;
     return location.pathname.startsWith(path);
   }
 
   const activeClass = "bg-primary/15 text-primary font-medium";
-  const inactiveClass = "text-muted-foreground hover:text-foreground hover:bg-accent";
+  const inactiveClass =
+    "text-muted-foreground hover:text-foreground hover:bg-accent";
 
-  const navLinks = isAuthenticated && user
-    ? [
-        { to: "/home",              icon: <Home className="h-5 w-5" />,    label: "Home" },
-        { to: "/explore",           icon: <Compass className="h-5 w-5" />, label: "Explore" },
-        { to: "/inbox",             icon: <Inbox className="h-5 w-5" />,   label: "Inbox" },
-        { to: "/messages",          icon: <Mail className="h-5 w-5" />,    label: "Messages" },
-        {
-          to: "/notifications",
-          icon: (
-            <span className="relative">
-              <Bell className="h-5 w-5" />
-              <NotificationBadge count={unreadCount} />
-            </span>
-          ),
-          label: "Notifications",
-        },
-        { to: `/${user.username}`,  icon: <User className="h-5 w-5" />,    label: `@${user.username}` },
-        { to: "/settings",          icon: <Settings className="h-5 w-5" />, label: "Settings" },
-      ]
-    : [];
+  const navLinks =
+    isAuthenticated && user
+      ? [
+          { to: "/home", icon: <Home className="h-5 w-5" />, label: "Home" },
+          {
+            to: "/explore",
+            icon: <Compass className="h-5 w-5" />,
+            label: "Explore",
+          },
+          { to: "/inbox", icon: <Inbox className="h-5 w-5" />, label: "Inbox" },
+          {
+            to: "/messages",
+            icon: <Mail className="h-5 w-5" />,
+            label: "Messages",
+          },
+          {
+            to: "/notifications",
+            icon: (
+              <span className="relative">
+                <Bell className="h-5 w-5" />
+                <NotificationBadge count={unreadCount} />
+              </span>
+            ),
+            label: "Notifications",
+          },
+          {
+            to: `/${user.username}`,
+            icon: <User className="h-5 w-5" />,
+            label: `@${user.username}`,
+          },
+          {
+            to: "/settings",
+            icon: <Settings className="h-5 w-5" />,
+            label: "Settings",
+          },
+        ]
+      : [];
 
   return (
     <>
@@ -136,7 +155,11 @@ export default function Navbar() {
                 className="rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                 aria-label="Toggle menu"
               >
-                {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {menuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
               </button>
             ) : (
               <div className="flex gap-2">

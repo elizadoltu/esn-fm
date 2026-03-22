@@ -1,10 +1,21 @@
 import { useState } from "react";
-import { Heart, MessageCircle, ChevronDown, ChevronUp, Send, Trash2 } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  ChevronDown,
+  ChevronUp,
+  Send,
+  Trash2,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { FeedItem } from "@/api/answers.api";
-import { useComments, usePostComment, useDeleteComment } from "@/hooks/useComments";
+import {
+  useComments,
+  usePostComment,
+  useDeleteComment,
+} from "@/hooks/useComments";
 import { useAuth } from "@/context/useAuth";
 import type { Comment } from "@/api/comments.api";
 
@@ -32,7 +43,9 @@ function CommentItem({
       <div className="flex items-start gap-2 group">
         <div className="flex-1 rounded-lg bg-accent/60 px-3 py-2">
           <p className="text-xs font-medium text-foreground/80 mb-0.5">
-            {comment.author.display_name ?? comment.author.username ?? "Deleted"}
+            {comment.author.display_name ??
+              comment.author.username ??
+              "Deleted"}
           </p>
           <p className="text-sm text-foreground">{comment.content}</p>
         </div>
@@ -43,7 +56,10 @@ function CommentItem({
               size="sm"
               className="h-7 px-2 text-xs text-muted-foreground"
               onClick={() =>
-                onReply(comment.id, comment.author.display_name ?? comment.author.username ?? "")
+                onReply(
+                  comment.id,
+                  comment.author.display_name ?? comment.author.username ?? ""
+                )
               }
             >
               Reply
@@ -69,7 +85,9 @@ function CommentItem({
             <div key={reply.id} className="flex items-start gap-2 group">
               <div className="flex-1 rounded-lg bg-muted/50 px-3 py-2">
                 <p className="text-xs font-medium text-foreground/80 mb-0.5">
-                  {reply.author.display_name ?? reply.author.username ?? "Deleted"}
+                  {reply.author.display_name ??
+                    reply.author.username ??
+                    "Deleted"}
                 </p>
                 <p className="text-sm text-foreground">{reply.content}</p>
               </div>
@@ -99,9 +117,13 @@ export default function FeedCard({
 }: Readonly<FeedCardProps>) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
-  const [replyTo, setReplyTo] = useState<{ id: string; name: string } | null>(null);
+  const [replyTo, setReplyTo] = useState<{ id: string; name: string } | null>(
+    null
+  );
 
-  const { data: comments = [] } = useComments(showComments ? item.answer_id : "");
+  const { data: comments = [] } = useComments(
+    showComments ? item.answer_id : ""
+  );
   const postComment = usePostComment(item.answer_id);
   const deleteComment = useDeleteComment(item.answer_id);
 
@@ -139,7 +161,9 @@ export default function FeedCard({
             >
               {item.author_display_name}
             </a>
-            <span className="text-xs text-muted-foreground">@{item.author_username}</span>
+            <span className="text-xs text-muted-foreground">
+              @{item.author_username}
+            </span>
           </div>
         )}
 
@@ -168,7 +192,9 @@ export default function FeedCard({
             disabled={!isAuthenticated}
             title={isAuthenticated ? undefined : "Sign in to like"}
           >
-            <Heart className={`h-4 w-4 ${item.liked_by_me ? "fill-current" : ""}`} />
+            <Heart
+              className={`h-4 w-4 ${item.liked_by_me ? "fill-current" : ""}`}
+            />
             <span className="text-xs">{item.likes}</span>
           </Button>
 
@@ -223,7 +249,9 @@ export default function FeedCard({
                   <Textarea
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
-                    placeholder={replyTo ? `Reply to ${replyTo.name}…` : "Add a comment…"}
+                    placeholder={
+                      replyTo ? `Reply to ${replyTo.name}…` : "Add a comment…"
+                    }
                     maxLength={200}
                     rows={2}
                     className="flex-1 resize-none text-sm"

@@ -40,7 +40,12 @@ export async function getAdminUsers(params: {
   role?: string;
   limit?: number;
   offset?: number;
-}): Promise<{ users: AdminUser[]; total: number; limit: number; offset: number }> {
+}): Promise<{
+  users: AdminUser[];
+  total: number;
+  limit: number;
+  offset: number;
+}> {
   const res = await client.get("/api/admin/users", { params });
   return res.data;
 }

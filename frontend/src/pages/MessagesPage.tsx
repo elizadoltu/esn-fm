@@ -5,10 +5,10 @@ import { useConversations } from "@/hooks/useMessages";
 function timeAgo(date: string): string {
   const diff = Date.now() - new Date(date).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1)  return "just now";
+  if (mins < 1) return "just now";
   if (mins < 60) return `${mins}m`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24)  return `${hrs}h`;
+  if (hrs < 24) return `${hrs}h`;
   return `${Math.floor(hrs / 24)}d`;
 }
 
@@ -54,7 +54,9 @@ export default function MessagesPage() {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <p className={`font-medium truncate ${conv.unread_count > 0 ? "text-foreground" : "text-foreground/80"}`}>
+                <p
+                  className={`font-medium truncate ${conv.unread_count > 0 ? "text-foreground" : "text-foreground/80"}`}
+                >
                   {conv.other_user.display_name}
                 </p>
                 <span className="text-xs text-muted-foreground shrink-0">
@@ -65,7 +67,9 @@ export default function MessagesPage() {
                 {conv.is_mine && (
                   <span className="text-xs text-muted-foreground">You: </span>
                 )}
-                <p className={`text-sm truncate ${conv.unread_count > 0 ? "font-medium text-foreground" : "text-muted-foreground"}`}>
+                <p
+                  className={`text-sm truncate ${conv.unread_count > 0 ? "font-medium text-foreground" : "text-muted-foreground"}`}
+                >
                   {conv.content}
                 </p>
                 {conv.unread_count > 0 && (

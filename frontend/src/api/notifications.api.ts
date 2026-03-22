@@ -24,7 +24,9 @@ export interface Notification {
   } | null;
 }
 
-export async function getNotifications(unreadOnly = false): Promise<Notification[]> {
+export async function getNotifications(
+  unreadOnly = false
+): Promise<Notification[]> {
   const res = await client.get<Notification[]>("/api/notifications", {
     params: unreadOnly ? { unread_only: true } : {},
   });
@@ -32,7 +34,9 @@ export async function getNotifications(unreadOnly = false): Promise<Notification
 }
 
 export async function getUnreadCount(): Promise<number> {
-  const res = await client.get<{ count: number }>("/api/notifications/unread-count");
+  const res = await client.get<{ count: number }>(
+    "/api/notifications/unread-count"
+  );
   return res.data.count;
 }
 

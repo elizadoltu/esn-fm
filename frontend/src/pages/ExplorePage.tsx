@@ -44,7 +44,9 @@ export default function ExplorePage() {
       {isSearching && (
         <div className="space-y-6">
           {searchLoading && (
-            <p className="text-center text-sm text-muted-foreground">Searching…</p>
+            <p className="text-center text-sm text-muted-foreground">
+              Searching…
+            </p>
           )}
 
           {/* Users */}
@@ -71,10 +73,16 @@ export default function ExplorePage() {
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
-                        <p className="font-medium truncate">{user.display_name}</p>
-                        {user.is_private && <Lock className="h-3 w-3 shrink-0 text-muted-foreground" />}
+                        <p className="font-medium truncate">
+                          {user.display_name}
+                        </p>
+                        {user.is_private && (
+                          <Lock className="h-3 w-3 shrink-0 text-muted-foreground" />
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground">@{user.username}</p>
+                      <p className="text-sm text-muted-foreground">
+                        @{user.username}
+                      </p>
                     </div>
                   </Link>
                 ))}
@@ -120,7 +128,9 @@ export default function ExplorePage() {
             <h2 className="text-lg font-semibold">Trending this week</h2>
           </div>
           {trendingLoading && (
-            <p className="text-center text-sm text-muted-foreground">Loading…</p>
+            <p className="text-center text-sm text-muted-foreground">
+              Loading…
+            </p>
           )}
           <div className="space-y-4">
             {trending.map((item) => (

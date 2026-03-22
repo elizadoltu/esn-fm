@@ -7,8 +7,12 @@ export interface FollowUser {
   avatar_url: string;
 }
 
-export async function followUser(username: string): Promise<{ following: boolean; pending: boolean }> {
-  const res = await client.post<{ following: boolean; pending: boolean }>(`/api/follows/${username}`);
+export async function followUser(
+  username: string
+): Promise<{ following: boolean; pending: boolean }> {
+  const res = await client.post<{ following: boolean; pending: boolean }>(
+    `/api/follows/${username}`
+  );
   return res.data;
 }
 
@@ -17,7 +21,7 @@ export async function unfollowUser(username: string): Promise<void> {
 }
 
 export async function getFollowRequests(): Promise<FollowUser[]> {
-  const res = await client.get<FollowUser[]>('/api/follows/requests');
+  const res = await client.get<FollowUser[]>("/api/follows/requests");
   return res.data;
 }
 

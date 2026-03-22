@@ -41,7 +41,9 @@ export default function SettingsPage() {
     });
   }, []);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
@@ -65,7 +67,10 @@ export default function SettingsPage() {
         is_private: form.is_private,
       });
       if (token) {
-        saveLogin(token, { ...updated, email: updated.email ?? "" } as Parameters<typeof saveLogin>[1]);
+        saveLogin(token, {
+          ...updated,
+          email: updated.email ?? "",
+        } as Parameters<typeof saveLogin>[1]);
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -92,7 +97,9 @@ export default function SettingsPage() {
               <ImageUpload
                 type="avatar"
                 currentUrl={form.avatar_url}
-                onUploaded={(url) => setForm((p) => ({ ...p, avatar_url: url }))}
+                onUploaded={(url) =>
+                  setForm((p) => ({ ...p, avatar_url: url }))
+                }
               />
             </div>
 
@@ -101,7 +108,9 @@ export default function SettingsPage() {
               <ImageUpload
                 type="cover"
                 currentUrl={form.cover_image_url}
-                onUploaded={(url) => setForm((p) => ({ ...p, cover_image_url: url }))}
+                onUploaded={(url) =>
+                  setForm((p) => ({ ...p, cover_image_url: url }))
+                }
               />
             </div>
           </CardContent>
@@ -176,11 +185,16 @@ export default function SettingsPage() {
                 id="allow_anonymous_questions"
                 type="checkbox"
                 checked={form.allow_anonymous_questions}
-                onChange={(e) => handleBool("allow_anonymous_questions", e.target.checked)}
+                onChange={(e) =>
+                  handleBool("allow_anonymous_questions", e.target.checked)
+                }
                 className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
               />
               <div>
-                <Label htmlFor="allow_anonymous_questions" className="cursor-pointer">
+                <Label
+                  htmlFor="allow_anonymous_questions"
+                  className="cursor-pointer"
+                >
                   Allow anonymous questions
                 </Label>
                 <p className="text-xs text-muted-foreground">

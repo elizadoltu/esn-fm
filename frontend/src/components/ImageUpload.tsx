@@ -105,7 +105,9 @@ export default function ImageUpload({
           >
             {loading ? "Uploading…" : "Change photo"}
           </button>
-          <p className="text-xs text-muted-foreground mt-0.5">JPG, PNG or WebP · max 5 MB</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            JPG, PNG or WebP · max 5 MB
+          </p>
           {error && <p className="text-xs text-destructive mt-1">{error}</p>}
         </div>
 
@@ -166,7 +168,9 @@ export default function ImageUpload({
       </div>
 
       {error && <p className="text-xs text-destructive">{error}</p>}
-      <p className="text-xs text-muted-foreground">JPG, PNG or WebP · max 5 MB · 1200×400 recommended</p>
+      <p className="text-xs text-muted-foreground">
+        JPG, PNG or WebP · max 5 MB · 1200×400 recommended
+      </p>
 
       <input
         ref={inputRef}

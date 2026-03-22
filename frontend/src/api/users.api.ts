@@ -31,16 +31,18 @@ export async function getMe(): Promise<Profile> {
   return res.data;
 }
 
-export async function updateProfile(data: Partial<{
-  display_name: string;
-  bio: string;
-  avatar_url: string;
-  cover_image_url: string;
-  location: string | null;
-  website: string | null;
-  allow_anonymous_questions: boolean;
-  is_private: boolean;
-}>): Promise<Profile> {
+export async function updateProfile(
+  data: Partial<{
+    display_name: string;
+    bio: string;
+    avatar_url: string;
+    cover_image_url: string;
+    location: string | null;
+    website: string | null;
+    allow_anonymous_questions: boolean;
+    is_private: boolean;
+  }>
+): Promise<Profile> {
   const res = await client.patch<Profile>("/api/users/me", data);
   return res.data;
 }

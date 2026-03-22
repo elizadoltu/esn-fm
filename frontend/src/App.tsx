@@ -43,18 +43,72 @@ export default function App() {
         <Route path="/:username" element={<ProfilePage />} />
 
         {/* Protected */}
-        <Route path="/home" element={<RequireAuth><HomePage /></RequireAuth>} />
-        <Route path="/inbox" element={<RequireAuth><InboxPage /></RequireAuth>} />
-        <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
-        <Route path="/messages" element={<RequireAuth><MessagesPage /></RequireAuth>} />
-        <Route path="/messages/:username" element={<RequireAuth><ConversationPage /></RequireAuth>} />
-        <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
+        <Route
+          path="/home"
+          element={
+            <RequireAuth>
+              <HomePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/inbox"
+          element={
+            <RequireAuth>
+              <InboxPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <RequireAuth>
+              <NotificationsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <RequireAuth>
+              <MessagesPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/messages/:username"
+          element={
+            <RequireAuth>
+              <ConversationPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <RequireAuth>
+              <SettingsPage />
+            </RequireAuth>
+          }
+        />
 
         {/* Admin */}
-        <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
+        <Route
+          path="/admin"
+          element={
+            <RequireAdmin>
+              <AdminPage />
+            </RequireAdmin>
+          }
+        />
 
         {/* Default */}
-        <Route path="/" element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />} />
+        <Route
+          path="/"
+          element={
+            <Navigate to={isAuthenticated ? "/home" : "/login"} replace />
+          }
+        />
       </Routes>
     </div>
   );

@@ -26,12 +26,18 @@ export default function ConversationPage() {
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
     if (!text.trim() || !username) return;
-    await send.mutateAsync({ recipient_username: username, content: text.trim() });
+    await send.mutateAsync({
+      recipient_username: username,
+      content: text.trim(),
+    });
     setText("");
   }
 
   return (
-    <div className="mx-auto flex max-w-xl flex-col px-4 py-4" style={{ height: "calc(100vh - 3.5rem)" }}>
+    <div
+      className="mx-auto flex max-w-xl flex-col px-4 py-4"
+      style={{ height: "calc(100vh - 3.5rem)" }}
+    >
       {/* Header */}
       <div className="mb-4 flex items-center gap-3 border-b border-border pb-4">
         <Button variant="ghost" size="sm" asChild className="-ml-2">
@@ -59,12 +65,17 @@ export default function ConversationPage() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto space-y-3 pb-4">
         {isLoading && (
-          <p className="text-center text-sm text-muted-foreground py-8">Loading…</p>
+          <p className="text-center text-sm text-muted-foreground py-8">
+            Loading…
+          </p>
         )}
         {messages.map((msg) => {
           const isMine = msg.sender_id === me?.id;
           return (
-            <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+            <div
+              key={msg.id}
+              className={`flex ${isMine ? "justify-end" : "justify-start"}`}
+            >
               <div
                 className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
                   isMine
@@ -81,7 +92,10 @@ export default function ConversationPage() {
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSend} className="flex gap-2 border-t border-border pt-4">
+      <form
+        onSubmit={handleSend}
+        className="flex gap-2 border-t border-border pt-4"
+      >
         <Textarea
           value={text}
           onChange={(e) => setText(e.target.value)}

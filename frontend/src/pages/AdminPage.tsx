@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Users, Flag, BarChart3, Search } from "lucide-react";
-import { useAdminStats, useAdminUsers, useUpdateUserRole, useAdminReports, useActionReport } from "@/hooks/useAdmin";
+import {
+  useAdminStats,
+  useAdminUsers,
+  useUpdateUserRole,
+  useAdminReports,
+  useActionReport,
+} from "@/hooks/useAdmin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,14 +21,20 @@ export default function AdminPage() {
   const [reportOffset, setReportOffset] = useState(0);
 
   const { data: stats } = useAdminStats();
-  const { data: usersData } = useAdminUsers({ q: userSearch || undefined, offset: userOffset });
-  const { data: reportsData } = useAdminReports({ status: reportStatus, offset: reportOffset });
+  const { data: usersData } = useAdminUsers({
+    q: userSearch || undefined,
+    offset: userOffset,
+  });
+  const { data: reportsData } = useAdminReports({
+    status: reportStatus,
+    offset: reportOffset,
+  });
   const updateRole = useUpdateUserRole();
   const actionReport = useActionReport();
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
-    { key: "stats",   label: "Stats",   icon: <BarChart3 className="h-4 w-4" /> },
-    { key: "users",   label: "Users",   icon: <Users className="h-4 w-4" /> },
+    { key: "stats", label: "Stats", icon: <BarChart3 className="h-4 w-4" /> },
+    { key: "users", label: "Users", icon: <Users className="h-4 w-4" /> },
     { key: "reports", label: "Reports", icon: <Flag className="h-4 w-4" /> },
   ];
 
@@ -52,13 +64,13 @@ export default function AdminPage() {
       {tab === "stats" && stats && (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
-            { label: "Total users",    value: stats.users.total },
-            { label: "New today",      value: stats.users.today },
-            { label: "Questions",      value: stats.questions },
-            { label: "Answers",        value: stats.answers },
+            { label: "Total users", value: stats.users.total },
+            { label: "New today", value: stats.users.today },
+            { label: "Questions", value: stats.questions },
+            { label: "Answers", value: stats.answers },
             { label: "Pending reports", value: stats.reports.pending },
-            { label: "Total reports",  value: stats.reports.total },
-            { label: "This week",      value: stats.users.this_week },
+            { label: "Total reports", value: stats.reports.total },
+            { label: "This week", value: stats.users.this_week },
           ].map(({ label, value }) => (
             <Card key={label}>
               <CardContent className="p-4">
@@ -77,7 +89,10 @@ export default function AdminPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={userSearch}
-              onChange={(e) => { setUserSearch(e.target.value); setUserOffset(0); }}
+              onChange={(e) => {
+                setUserSearch(e.target.value);
+                setUserOffset(0);
+              }}
               placeholder="Search by username, name, or email…"
               className="pl-9"
             />
@@ -87,8 +102,18 @@ export default function AdminPage() {
             <table className="w-full text-sm">
               <thead className="bg-muted/40">
                 <tr>
-                  {["User", "Email", "Role", "Answers", "Joined", "Actions"].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
+                  {[
+                    "User",
+                    "Email",
+                    "Role",
+                    "Answers",
+                    "Joined",
+                    "Actions",
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground"
+                    >
                       {h}
                     </th>
                   ))}
@@ -96,20 +121,31 @@ export default function AdminPage() {
               </thead>
               <tbody>
                 {usersData?.users.map((u) => (
-                  <tr key={u.id} className="border-t border-border hover:bg-accent/30">
+                  <tr
+                    key={u.id}
+                    className="border-t border-border hover:bg-accent/30"
+                  >
                     <td className="px-4 py-3">
                       <div>
                         <p className="font-medium">{u.display_name}</p>
-                        <p className="text-xs text-muted-foreground">@{u.username}</p>
+                        <p className="text-xs text-muted-foreground">
+                          @{u.username}
+                        </p>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {u.email}
+                    </td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        u.role === "admin" ? "bg-destructive/20 text-destructive"
-                        : u.role === "moderator" ? "bg-primary/20 text-primary"
-                        : "bg-muted text-muted-foreground"
-                      }`}>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          u.role === "admin"
+                            ? "bg-destructive/20 text-destructive"
+                            : u.role === "moderator"
+                              ? "bg-primary/20 text-primary"
+                              : "bg-muted text-muted-foreground"
+                        }`}
+                      >
                         {u.role}
                       </span>
                     </td>
@@ -121,7 +157,13 @@ export default function AdminPage() {
                       <select
                         value={u.role}
                         onChange={(e) =>
-                          updateRole.mutate({ id: u.id, role: e.target.value as "user" | "moderator" | "admin" })
+                          updateRole.mutate({
+                            id: u.id,
+                            role: e.target.value as
+                              | "user"
+                              | "moderator"
+                              | "admin",
+                          })
                         }
                         className="rounded border border-border bg-background px-2 py-1 text-xs"
                       >
@@ -142,12 +184,20 @@ export default function AdminPage() {
             </p>
             <div className="flex gap-2">
               {userOffset > 0 && (
-                <Button variant="outline" size="sm" onClick={() => setUserOffset((o) => o - 20)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setUserOffset((o) => o - 20)}
+                >
                   Previous
                 </Button>
               )}
               {(usersData?.users.length ?? 0) === 20 && (
-                <Button variant="outline" size="sm" onClick={() => setUserOffset((o) => o + 20)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setUserOffset((o) => o + 20)}
+                >
                   Next
                 </Button>
               )}
@@ -163,7 +213,10 @@ export default function AdminPage() {
             {["pending", "reviewed", "actioned"].map((s) => (
               <button
                 key={s}
-                onClick={() => { setReportStatus(s); setReportOffset(0); }}
+                onClick={() => {
+                  setReportStatus(s);
+                  setReportOffset(0);
+                }}
                 className={`rounded-full px-3 py-1 text-sm capitalize transition-colors ${
                   reportStatus === s
                     ? "bg-primary text-primary-foreground"
@@ -182,13 +235,16 @@ export default function AdminPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="rounded bg-muted px-2 py-0.5 text-xs capitalize">{r.content_type}</span>
+                        <span className="rounded bg-muted px-2 py-0.5 text-xs capitalize">
+                          {r.content_type}
+                        </span>
                         <span className="rounded bg-destructive/20 text-destructive px-2 py-0.5 text-xs capitalize">
                           {r.reason.replace(/_/g, " ")}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Reported by @{r.reporter_username} · {new Date(r.created_at).toLocaleDateString()}
+                        Reported by @{r.reporter_username} ·{" "}
+                        {new Date(r.created_at).toLocaleDateString()}
                       </p>
                       <p className="text-xs text-muted-foreground font-mono">
                         ID: {r.content_id}
@@ -199,14 +255,24 @@ export default function AdminPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => actionReport.mutate({ id: r.id, status: "reviewed" })}
+                          onClick={() =>
+                            actionReport.mutate({
+                              id: r.id,
+                              status: "reviewed",
+                            })
+                          }
                           disabled={actionReport.isPending}
                         >
                           Reviewed
                         </Button>
                         <Button
                           size="sm"
-                          onClick={() => actionReport.mutate({ id: r.id, status: "actioned" })}
+                          onClick={() =>
+                            actionReport.mutate({
+                              id: r.id,
+                              status: "actioned",
+                            })
+                          }
                           disabled={actionReport.isPending}
                         >
                           Action
@@ -218,18 +284,28 @@ export default function AdminPage() {
               </Card>
             ))}
             {reportsData?.reports.length === 0 && (
-              <p className="py-8 text-center text-muted-foreground">No {reportStatus} reports</p>
+              <p className="py-8 text-center text-muted-foreground">
+                No {reportStatus} reports
+              </p>
             )}
           </div>
 
           <div className="flex justify-end gap-2">
             {reportOffset > 0 && (
-              <Button variant="outline" size="sm" onClick={() => setReportOffset((o) => o - 20)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setReportOffset((o) => o - 20)}
+              >
                 Previous
               </Button>
             )}
             {(reportsData?.reports.length ?? 0) === 20 && (
-              <Button variant="outline" size="sm" onClick={() => setReportOffset((o) => o + 20)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setReportOffset((o) => o + 20)}
+              >
                 Next
               </Button>
             )}

@@ -3,24 +3,24 @@
 /* ── shadcn/ui design tokens — ESN FM dark theme ──────────────────────────── */
 /* Background: #131313 (0 0% 7%)  |  Light: #E2E1DF (40 5% 88%)              */
 @theme inline {
-  --color-background:         hsl(var(--background));
-  --color-foreground:         hsl(var(--foreground));
-  --color-card:               hsl(var(--card));
-  --color-card-foreground:    hsl(var(--card-foreground));
-  --color-popover:            hsl(var(--popover));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary:            hsl(var(--primary));
+  --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary:          hsl(var(--secondary));
+  --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted:              hsl(var(--muted));
-  --color-muted-foreground:   hsl(var(--muted-foreground));
-  --color-accent:             hsl(var(--accent));
-  --color-accent-foreground:  hsl(var(--accent-foreground));
-  --color-destructive:        hsl(var(--destructive));
-  --color-border:             hsl(var(--border));
-  --color-input:              hsl(var(--input));
-  --color-ring:               hsl(var(--ring));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -30,33 +30,33 @@
 @layer base {
   :root {
     /* ── Dark palette ─────────────────────────────────── */
-    --background:          0 0% 7%;       /* #131313 */
-    --foreground:          40 5% 88%;     /* #E2E1DF */
+    --background: 0 0% 7%; /* #131313 */
+    --foreground: 40 5% 88%; /* #E2E1DF */
 
-    --card:                0 0% 10%;      /* #1A1A1A */
-    --card-foreground:     40 5% 88%;     /* #E2E1DF */
+    --card: 0 0% 10%; /* #1A1A1A */
+    --card-foreground: 40 5% 88%; /* #E2E1DF */
 
-    --popover:             0 0% 10%;
-    --popover-foreground:  40 5% 88%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 40 5% 88%;
 
     /* Primary = off-white (#E2E1DF) button on dark background */
-    --primary:             40 5% 88%;     /* #E2E1DF */
-    --primary-foreground:  0 0% 7%;       /* #131313 */
+    --primary: 40 5% 88%; /* #E2E1DF */
+    --primary-foreground: 0 0% 7%; /* #131313 */
 
-    --secondary:           0 0% 14%;      /* #242424 */
+    --secondary: 0 0% 14%; /* #242424 */
     --secondary-foreground: 40 5% 88%;
 
-    --muted:               0 0% 13%;      /* #212121 */
-    --muted-foreground:    40 3% 55%;     /* mid-gray */
+    --muted: 0 0% 13%; /* #212121 */
+    --muted-foreground: 40 3% 55%; /* mid-gray */
 
-    --accent:              0 0% 16%;      /* #282828 */
-    --accent-foreground:   40 5% 88%;
+    --accent: 0 0% 16%; /* #282828 */
+    --accent-foreground: 40 5% 88%;
 
-    --destructive:         0 65% 55%;     /* red that works on dark */
+    --destructive: 0 65% 55%; /* red that works on dark */
 
-    --border:              0 0% 18%;      /* #2E2E2E */
-    --input:               0 0% 13%;      /* #212121 */
-    --ring:                40 5% 88%;     /* #E2E1DF */
+    --border: 0 0% 18%; /* #2E2E2E */
+    --input: 0 0% 13%; /* #212121 */
+    --ring: 40 5% 88%; /* #E2E1DF */
 
     --radius: 0.5rem;
   }
@@ -78,8 +78,18 @@
   }
 
   /* Scrollbar — minimal dark style */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: hsl(var(--background)); }
-  ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
 }
