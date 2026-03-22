@@ -1,5 +1,5 @@
-import axios from 'axios';
-import { getToken, clearAuth } from '@/lib/auth';
+import axios from "axios";
+import { getToken, clearAuth } from "@/lib/auth";
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -18,10 +18,10 @@ client.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       clearAuth();
-      globalThis.location.href = '/login';
+      globalThis.location.href = "/login";
     }
     return Promise.reject(err);
-  },
+  }
 );
 
 export default client;

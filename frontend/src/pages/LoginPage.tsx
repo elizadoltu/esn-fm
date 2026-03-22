@@ -1,18 +1,24 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { MessageSquare } from 'lucide-react';
-import { login } from '@/api/auth.api';
-import { useAuth } from '@/context/useAuth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { MessageSquare } from "lucide-react";
+import { login } from "@/api/auth.api";
+import { useAuth } from "@/context/useAuth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 
 export default function LoginPage() {
   const { login: saveLogin } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +31,11 @@ export default function LoginPage() {
       saveLogin(res.token, res.user);
       navigate(`/${res.user.username}`);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Invalid credentials. Please try again.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Invalid credentials. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -37,13 +47,17 @@ export default function LoginPage() {
         <div className="flex flex-col items-center gap-2 text-center">
           <MessageSquare className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold">ESN FM</h1>
-          <p className="text-sm text-muted-foreground">Sign in to your account</p>
+          <p className="text-sm text-muted-foreground">
+            Sign in to your account
+          </p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle>Sign in</CardTitle>
-            <CardDescription>Enter your email and password below</CardDescription>
+            <CardDescription>
+              Enter your email and password below
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -79,13 +93,16 @@ export default function LoginPage() {
               )}
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Signing in…' : 'Sign in'}
+                {loading ? "Signing in…" : "Sign in"}
               </Button>
             </form>
 
             <p className="mt-4 text-center text-sm text-muted-foreground">
-              No account?{' '}
-              <Link to="/register" className="font-medium text-primary hover:underline">
+              No account?{" "}
+              <Link
+                to="/register"
+                className="font-medium text-primary hover:underline"
+              >
                 Register
               </Link>
             </p>

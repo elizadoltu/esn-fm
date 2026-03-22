@@ -1,7 +1,7 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Inbox, User, MessageSquare } from 'lucide-react';
-import { useAuth } from '@/context/useAuth';
-import { Button } from '@/components/ui/button';
+import { Link, useNavigate } from "react-router-dom";
+import { LogOut, Inbox, User, MessageSquare } from "lucide-react";
+import { useAuth } from "@/context/useAuth";
+import { Button } from "@/components/ui/button";
 
 export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -9,7 +9,7 @@ export default function Navbar() {
 
   function handleLogout() {
     logout();
-    navigate('/login');
+    navigate("/login");
   }
 
   return (
@@ -26,7 +26,10 @@ export default function Navbar() {
           {isAuthenticated && user ? (
             <>
               <Button variant="ghost" size="sm" asChild>
-                <Link to={`/${user.username}`} className="flex items-center gap-1.5">
+                <Link
+                  to={`/${user.username}`}
+                  className="flex items-center gap-1.5"
+                >
                   <User className="h-4 w-4" />
                   <span className="hidden sm:inline">@{user.username}</span>
                 </Link>
@@ -37,7 +40,12 @@ export default function Navbar() {
                   <span className="hidden sm:inline">Inbox</span>
                 </Link>
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleLogout} className="text-destructive hover:text-destructive">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-destructive hover:text-destructive"
+              >
                 <LogOut className="h-4 w-4" />
                 <span className="hidden sm:inline">Logout</span>
               </Button>

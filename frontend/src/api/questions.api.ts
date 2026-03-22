@@ -1,4 +1,4 @@
-import client from './client';
+import client from "./client";
 
 export interface Question {
   id: string;
@@ -14,12 +14,12 @@ export async function sendQuestion(data: {
   content: string;
   sender_name?: string;
 }): Promise<Question> {
-  const res = await client.post<Question>('/api/questions', data);
+  const res = await client.post<Question>("/api/questions", data);
   return res.data;
 }
 
 export async function getInbox(): Promise<Question[]> {
-  const res = await client.get<Question[]>('/api/questions/inbox');
+  const res = await client.get<Question[]>("/api/questions/inbox");
   return res.data;
 }
 

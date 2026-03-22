@@ -1,23 +1,29 @@
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { CheckCircle2 } from 'lucide-react';
-import { useProfile } from '@/hooks/useProfile';
-import { useAuth } from '@/context/useAuth';
-import { sendQuestion } from '@/api/questions.api';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { CheckCircle2 } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/context/useAuth";
+import { sendQuestion } from "@/api/questions.api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 
 export default function AskPage() {
   const { username } = useParams<{ username: string }>();
   const { user: me } = useAuth();
 
-  const { data: profile } = useProfile(username ?? '');
+  const { data: profile } = useProfile(username ?? "");
 
-  const [content, setContent] = useState('');
-  const [senderName, setSenderName] = useState('');
+  const [content, setContent] = useState("");
+  const [senderName, setSenderName] = useState("");
   const [anonymous, setAnonymous] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,11 +38,11 @@ export default function AskPage() {
       await sendQuestion({
         recipient_username: username,
         content,
-        sender_name: anonymous ? undefined : (senderName || me?.display_name),
+        sender_name: anonymous ? undefined : senderName || me?.display_name,
       });
       setSubmitted(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to send question.');
+      setError(err instanceof Error ? err.message : "Failed to send question.");
     } finally {
       setLoading(false);
     }
@@ -77,7 +83,9 @@ export default function AskPage() {
                 rows={4}
                 required
               />
-              <p className="text-right text-xs text-muted-foreground">{content.length}/500</p>
+              <p className="text-right text-xs text-muted-foreground">
+                {content.length}/500
+              </p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -99,7 +107,7 @@ export default function AskPage() {
                 <Input
                   id="senderName"
                   type="text"
-                  placeholder={me?.display_name ?? 'Your name'}
+                  placeholder={me?.display_name ?? "Your name"}
                   value={senderName}
                   onChange={(e) => setSenderName(e.target.value)}
                   maxLength={60}
@@ -113,8 +121,12 @@ export default function AskPage() {
               </p>
             )}
 
-            <Button type="submit" className="w-full" disabled={loading || !content.trim()}>
-              {loading ? 'Sending…' : 'Send question'}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading || !content.trim()}
+            >
+              {loading ? "Sending…" : "Send question"}
             </Button>
           </form>
         </CardContent>

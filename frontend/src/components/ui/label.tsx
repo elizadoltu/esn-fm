@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 type LabelProps = React.LabelHTMLAttributes<HTMLLabelElement>;
 
@@ -6,8 +6,8 @@ function Label({ className, ...props }: LabelProps) {
   return (
     <label
       className={cn(
-        'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
-        className,
+        "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+        className
       )}
       {...props}
     />

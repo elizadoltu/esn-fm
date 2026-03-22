@@ -1,4 +1,4 @@
-import client from './client';
+import client from "./client";
 
 export interface FollowUser {
   id: string;
@@ -16,11 +16,15 @@ export async function unfollowUser(username: string): Promise<void> {
 }
 
 export async function getFollowers(username: string): Promise<FollowUser[]> {
-  const res = await client.get<FollowUser[]>(`/api/follows/${username}/followers`);
+  const res = await client.get<FollowUser[]>(
+    `/api/follows/${username}/followers`
+  );
   return res.data;
 }
 
 export async function getFollowing(username: string): Promise<FollowUser[]> {
-  const res = await client.get<FollowUser[]>(`/api/follows/${username}/following`);
+  const res = await client.get<FollowUser[]>(
+    `/api/follows/${username}/following`
+  );
   return res.data;
 }

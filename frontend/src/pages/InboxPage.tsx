@@ -1,5 +1,5 @@
-import { useInbox, useDeleteQuestion, usePostAnswer } from '@/hooks/useInbox';
-import QuestionCard from '@/components/QuestionCard';
+import { useInbox, useDeleteQuestion, usePostAnswer } from "@/hooks/useInbox";
+import QuestionCard from "@/components/QuestionCard";
 
 export default function InboxPage() {
   const { data: questions, isLoading } = useInbox();
@@ -7,12 +7,15 @@ export default function InboxPage() {
   const answer = usePostAnswer();
 
   if (isLoading) {
-    return <div className="py-16 text-center text-muted-foreground">Loading…</div>;
+    return (
+      <div className="py-16 text-center text-muted-foreground">Loading…</div>
+    );
   }
 
   const count = questions?.length ?? 0;
-  const plural = count > 1 ? 's' : '';
-  const subtitle = count > 0 ? `${count} unanswered question${plural}` : 'All caught up!';
+  const plural = count > 1 ? "s" : "";
+  const subtitle =
+    count > 0 ? `${count} unanswered question${plural}` : "All caught up!";
 
   return (
     <div className="mx-auto max-w-xl px-4 py-8">

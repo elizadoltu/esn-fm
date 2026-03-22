@@ -1,4 +1,4 @@
-import client from './client';
+import client from "./client";
 
 export interface FeedItem {
   question_id: string;
@@ -20,9 +20,11 @@ export interface FeedResponse {
 
 export async function getFeed(
   username: string,
-  params: { limit?: number; offset?: number } = {},
+  params: { limit?: number; offset?: number } = {}
 ): Promise<FeedResponse> {
-  const res = await client.get<FeedResponse>(`/api/answers/${username}`, { params });
+  const res = await client.get<FeedResponse>(`/api/answers/${username}`, {
+    params,
+  });
   return res.data;
 }
 
@@ -30,14 +32,18 @@ export async function postAnswer(data: {
   question_id: string;
   content: string;
 }): Promise<void> {
-  await client.post('/api/answers', data);
+  await client.post("/api/answers", data);
 }
 
 export async function deleteAnswer(id: string): Promise<void> {
   await client.delete(`/api/answers/${id}`);
 }
 
-export async function toggleLike(answerId: string): Promise<{ liked: boolean }> {
-  const res = await client.post<{ liked: boolean }>(`/api/answers/${answerId}/like`);
+export async function toggleLike(
+  answerId: string
+): Promise<{ liked: boolean }> {
+  const res = await client.post<{ liked: boolean }>(
+    `/api/answers/${answerId}/like`
+  );
   return res.data;
 }

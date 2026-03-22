@@ -1,5 +1,5 @@
-import { createContext } from 'react';
-import type { StoredUser } from '@/lib/auth';
+import { createContext } from "react";
+import type { StoredUser } from "@/lib/auth";
 
 export interface AuthContextValue {
   token: string | null;

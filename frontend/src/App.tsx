@@ -1,11 +1,11 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '@/context/useAuth';
-import Navbar from '@/components/Navbar';
-import LoginPage from '@/pages/LoginPage';
-import RegisterPage from '@/pages/RegisterPage';
-import ProfilePage from '@/pages/ProfilePage';
-import InboxPage from '@/pages/InboxPage';
-import AskPage from '@/pages/AskPage';
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "@/context/useAuth";
+import Navbar from "@/components/Navbar";
+import LoginPage from "@/pages/LoginPage";
+import RegisterPage from "@/pages/RegisterPage";
+import ProfilePage from "@/pages/ProfilePage";
+import InboxPage from "@/pages/InboxPage";
+import AskPage from "@/pages/AskPage";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();

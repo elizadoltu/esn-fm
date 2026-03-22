@@ -1,5 +1,5 @@
-const TOKEN_KEY = 'esn_fm_token';
-const USER_KEY = 'esn_fm_user';
+const TOKEN_KEY = "esn_fm_token";
+const USER_KEY = "esn_fm_user";
 
 export interface StoredUser {
   id: string;

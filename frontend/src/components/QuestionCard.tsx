@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { Trash2, MessageCircle, X, Send } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import type { Question } from '@/api/questions.api';
+import { useState } from "react";
+import { Trash2, MessageCircle, X, Send } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import type { Question } from "@/api/questions.api";
 
 interface QuestionCardProps {
   question: Question;
@@ -21,20 +21,20 @@ export default function QuestionCard({
   isDeleting = false,
 }: QuestionCardProps) {
   const [open, setOpen] = useState(false);
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
 
   async function handleAnswer() {
     if (!text.trim()) return;
     await onAnswer(question.id, text);
     setOpen(false);
-    setText('');
+    setText("");
   }
 
   return (
     <Card>
       <CardContent className="p-5">
         <p className="mb-1 text-xs text-muted-foreground">
-          {question.sender_name ? question.sender_name : 'Anonymous'}
+          {question.sender_name ? question.sender_name : "Anonymous"}
         </p>
         <p className="font-medium text-foreground">{question.content}</p>
 
@@ -49,12 +49,17 @@ export default function QuestionCard({
               autoFocus
             />
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">{text.length}/1000</span>
+              <span className="text-xs text-muted-foreground">
+                {text.length}/1000
+              </span>
               <div className="flex gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => { setOpen(false); setText(''); }}
+                  onClick={() => {
+                    setOpen(false);
+                    setText("");
+                  }}
                 >
                   <X className="h-4 w-4" />
                   Cancel
@@ -65,7 +70,7 @@ export default function QuestionCard({
                   disabled={!text.trim() || isAnswering}
                 >
                   <Send className="h-4 w-4" />
-                  {isAnswering ? 'Posting…' : 'Post answer'}
+                  {isAnswering ? "Posting…" : "Post answer"}
                 </Button>
               </div>
             </div>
