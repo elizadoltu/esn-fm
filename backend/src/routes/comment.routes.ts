@@ -76,12 +76,16 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
 
     // If it's a reply, also notify parent comment author
     if (data.parent_comment_id) {
-      const parentAuthor = await pool.query(
-        `SELECT author_id FROM comments WHERE id = $1`,
-        [data.parent_comment_id]
-      );
+      const parentAuthor = await pool.query(`SELECT author_id FROM comments WHERE id = $1`, [
+        data.parent_comment_id,
+      ]);
       if (parentAuthor.rows[0] && parentAuthor.rows[0].author_id !== req.user!.id) {
-        await createNotification(parentAuthor.rows[0].author_id, 'new_reply', comment.id, req.user!.id);
+        await createNotification(
+          parentAuthor.rows[0].author_id,
+          'new_reply',
+          comment.id,
+          req.user!.id
+        );
       }
     }
 

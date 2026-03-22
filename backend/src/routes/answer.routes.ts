@@ -228,9 +228,16 @@ router.post('/:id/like', verifyJWT, async (req: Request, res: Response, next: Ne
       ]);
 
       // Notify answer author
-      const answerResult = await pool.query(`SELECT author_id FROM answers WHERE id = $1`, [req.params.id]);
+      const answerResult = await pool.query(`SELECT author_id FROM answers WHERE id = $1`, [
+        req.params.id,
+      ]);
       if (answerResult.rows[0]) {
-        await createNotification(answerResult.rows[0].author_id, 'new_like', req.params.id, req.user!.id);
+        await createNotification(
+          answerResult.rows[0].author_id,
+          'new_like',
+          req.params.id,
+          req.user!.id
+        );
       }
 
       res.json({ liked: true });

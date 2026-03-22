@@ -34,10 +34,9 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
   try {
     const data = sendDmSchema.parse(req.body);
 
-    const recipientResult = await pool.query(
-      `SELECT id FROM users WHERE username = $1`,
-      [data.recipient_username]
-    );
+    const recipientResult = await pool.query(`SELECT id FROM users WHERE username = $1`, [
+      data.recipient_username,
+    ]);
     if (!recipientResult.rows[0]) {
       res.status(404).json({ error: 'Recipient not found' });
       return;
@@ -132,7 +131,9 @@ router.get('/', verifyJWT, async (req: Request, res: Response, next: NextFunctio
     }));
 
     // Sort by latest message
-    conversations.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    conversations.sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
     res.json(conversations);
   } catch (err) {
@@ -165,7 +166,9 @@ router.get('/', verifyJWT, async (req: Request, res: Response, next: NextFunctio
  */
 router.get('/:username', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const otherResult = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
+    const otherResult = await pool.query(`SELECT id FROM users WHERE username = $1`, [
+      req.params.username,
+    ]);
     if (!otherResult.rows[0]) {
       res.status(404).json({ error: 'User not found' });
       return;

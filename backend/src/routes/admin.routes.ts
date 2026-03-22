@@ -81,7 +81,9 @@ router.get('/users', async (req: Request, res: Response, next: NextFunction) => 
     let idx = 1;
 
     if (q) {
-      conditions.push(`(u.username ILIKE $${idx} OR u.display_name ILIKE $${idx} OR u.email ILIKE $${idx})`);
+      conditions.push(
+        `(u.username ILIKE $${idx} OR u.display_name ILIKE $${idx} OR u.email ILIKE $${idx})`
+      );
       values.push(`%${q}%`);
       idx++;
     }
@@ -141,29 +143,33 @@ router.get('/users', async (req: Request, res: Response, next: NextFunction) => 
  *       200:
  *         description: User updated
  */
-router.patch('/users/:id', verifyAdminOnly, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { role } = req.body;
-    if (!role || !['user', 'moderator', 'admin'].includes(role)) {
-      res.status(400).json({ error: 'Invalid role' });
-      return;
+router.patch(
+  '/users/:id',
+  verifyAdminOnly,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { role } = req.body;
+      if (!role || !['user', 'moderator', 'admin'].includes(role)) {
+        res.status(400).json({ error: 'Invalid role' });
+        return;
+      }
+
+      const result = await pool.query(
+        `UPDATE users SET role = $1 WHERE id = $2 RETURNING id, username, role`,
+        [role, req.params.id]
+      );
+
+      if (!result.rows[0]) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+
+      res.json(result.rows[0]);
+    } catch (err) {
+      next(err);
     }
-
-    const result = await pool.query(
-      `UPDATE users SET role = $1 WHERE id = $2 RETURNING id, username, role`,
-      [role, req.params.id]
-    );
-
-    if (!result.rows[0]) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-
-    res.json(result.rows[0]);
-  } catch (err) {
-    next(err);
   }
-});
+);
 
 /**
  * @openapi

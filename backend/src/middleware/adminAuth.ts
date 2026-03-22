@@ -15,7 +15,11 @@ export async function verifyAdmin(req: Request, res: Response, next: NextFunctio
   next();
 }
 
-export async function verifyAdminOnly(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function verifyAdminOnly(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
   if (!req.user) {
     res.status(401).json({ error: 'Unauthorized' });
     return;

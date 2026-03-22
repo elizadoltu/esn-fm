@@ -23,7 +23,9 @@ const router = Router();
  */
 router.post('/:username', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
+    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [
+      req.params.username,
+    ]);
     if (!target.rows[0]) {
       res.status(404).json({ error: 'User not found' });
       return;
@@ -70,7 +72,9 @@ router.post('/:username', verifyJWT, async (req: Request, res: Response, next: N
  */
 router.delete('/:username', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
+    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [
+      req.params.username,
+    ]);
     if (!target.rows[0]) {
       res.status(404).json({ error: 'User not found' });
       return;

@@ -42,36 +42,42 @@ router.get('/requests', verifyJWT, async (req: Request, res: Response, next: Nex
  *     security:
  *       - bearerAuth: []
  */
-router.patch('/requests/:username/approve', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const requester = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
-    if (!requester.rows[0]) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
+router.patch(
+  '/requests/:username/approve',
+  verifyJWT,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const requester = await pool.query(`SELECT id FROM users WHERE username = $1`, [
+        req.params.username,
+      ]);
+      if (!requester.rows[0]) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
 
-    const requesterId = requester.rows[0].id;
+      const requesterId = requester.rows[0].id;
 
-    const updated = await pool.query(
-      `UPDATE follows SET status = 'accepted'
+      const updated = await pool.query(
+        `UPDATE follows SET status = 'accepted'
        WHERE follower_id = $1 AND following_id = $2 AND status = 'pending'
        RETURNING follower_id`,
-      [requesterId, req.user!.id]
-    );
+        [requesterId, req.user!.id]
+      );
 
-    if (!updated.rows[0]) {
-      res.status(404).json({ error: 'No pending request found' });
-      return;
+      if (!updated.rows[0]) {
+        res.status(404).json({ error: 'No pending request found' });
+        return;
+      }
+
+      // Notify the requester that their request was accepted
+      await createNotification(requesterId, 'new_follower', req.user!.id, req.user!.id);
+
+      res.json({ approved: true });
+    } catch (err) {
+      next(err);
     }
-
-    // Notify the requester that their request was accepted
-    await createNotification(requesterId, 'new_follower', req.user!.id, req.user!.id);
-
-    res.json({ approved: true });
-  } catch (err) {
-    next(err);
   }
-});
+);
 
 /**
  * @openapi
@@ -82,24 +88,30 @@ router.patch('/requests/:username/approve', verifyJWT, async (req: Request, res:
  *     security:
  *       - bearerAuth: []
  */
-router.delete('/requests/:username/decline', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const requester = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
-    if (!requester.rows[0]) {
-      res.status(404).json({ error: 'User not found' });
-      return;
+router.delete(
+  '/requests/:username/decline',
+  verifyJWT,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const requester = await pool.query(`SELECT id FROM users WHERE username = $1`, [
+        req.params.username,
+      ]);
+      if (!requester.rows[0]) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+
+      await pool.query(
+        `DELETE FROM follows WHERE follower_id = $1 AND following_id = $2 AND status = 'pending'`,
+        [requester.rows[0].id, req.user!.id]
+      );
+
+      res.json({ declined: true });
+    } catch (err) {
+      next(err);
     }
-
-    await pool.query(
-      `DELETE FROM follows WHERE follower_id = $1 AND following_id = $2 AND status = 'pending'`,
-      [requester.rows[0].id, req.user!.id]
-    );
-
-    res.json({ declined: true });
-  } catch (err) {
-    next(err);
   }
-});
+);
 
 /**
  * @openapi
@@ -112,7 +124,9 @@ router.delete('/requests/:username/decline', verifyJWT, async (req: Request, res
  */
 router.post('/:username', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const target = await pool.query(`SELECT id, is_private FROM users WHERE username = $1`, [req.params.username]);
+    const target = await pool.query(`SELECT id, is_private FROM users WHERE username = $1`, [
+      req.params.username,
+    ]);
     if (!target.rows[0]) {
       res.status(404).json({ error: 'User not found' });
       return;
@@ -154,7 +168,9 @@ router.post('/:username', verifyJWT, async (req: Request, res: Response, next: N
  */
 router.delete('/:username', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
+    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [
+      req.params.username,
+    ]);
     if (!target.rows[0]) {
       res.status(404).json({ error: 'User not found' });
       return;
@@ -180,7 +196,9 @@ router.delete('/:username', verifyJWT, async (req: Request, res: Response, next:
  */
 router.get('/:username/followers', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
+    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [
+      req.params.username,
+    ]);
     if (!target.rows[0]) {
       res.status(404).json({ error: 'User not found' });
       return;
@@ -210,7 +228,9 @@ router.get('/:username/followers', async (req: Request, res: Response, next: Nex
  */
 router.get('/:username/following', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [req.params.username]);
+    const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [
+      req.params.username,
+    ]);
     if (!target.rows[0]) {
       res.status(404).json({ error: 'User not found' });
       return;

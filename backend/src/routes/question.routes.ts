@@ -67,7 +67,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // show_in_feed defaults to TRUE for logged-in, FALSE for anonymous
-    const showInFeed = data.show_in_feed ?? (senderId !== null);
+    const showInFeed = data.show_in_feed ?? senderId !== null;
 
     const result = await pool.query(
       `INSERT INTO questions (recipient_id, sender_id, sender_name, content, show_in_feed)
