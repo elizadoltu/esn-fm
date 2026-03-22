@@ -1,15 +1,6 @@
-import { createContext, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { getToken, getUser, saveAuth, clearAuth, type StoredUser } from '@/lib/auth';
-
-export interface AuthContextValue {
-  token: string | null;
-  user: StoredUser | null;
-  login: (token: string, user: StoredUser) => void;
-  logout: () => void;
-  isAuthenticated: boolean;
-}
-
-export const AuthContext = createContext<AuthContextValue | null>(null);
+import { AuthContext } from './auth-context';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(getToken);
@@ -33,4 +24,3 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext>
   );
 }
-
