@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { UserCircle2 } from 'lucide-react';
 import { useProfile, useFeed, useLike } from '@/hooks/useProfile';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import FeedCard from '@/components/FeedCard';

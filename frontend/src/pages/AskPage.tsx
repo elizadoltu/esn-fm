@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/useAuth';
 import { sendQuestion } from '@/api/questions.api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

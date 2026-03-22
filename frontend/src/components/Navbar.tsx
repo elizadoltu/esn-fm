@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, Inbox, User, MessageSquare } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/useAuth';
 import { Button } from '@/components/ui/button';
 
 export default function Navbar() {
