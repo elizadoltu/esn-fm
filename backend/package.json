@@ -7,7 +7,7 @@
     "dev": "node --env-file=.env --import tsx/esm --watch src/index.ts",
     "build": "tsc",
     "start": "NODE_ENV=production node dist/index.js",
-    "db:migrate": "node --env-file=.env --import tsx/esm src/db/migrate.ts",
+    "db:migrate": "if [ -f .env ]; then node --env-file=.env --import tsx/esm src/db/migrate.ts; else node --import tsx/esm src/db/migrate.ts; fi",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,js,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
