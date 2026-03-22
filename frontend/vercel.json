@@ -1,6 +1,7 @@
 {
-    "git": {
-      "deploymentEnabled": false
-    },
-    "outputDirectory": "dist"
-  }
+  "git": {
+    "deploymentEnabled": false
+  },
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
