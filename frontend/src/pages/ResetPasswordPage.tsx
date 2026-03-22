@@ -3,7 +3,13 @@ import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import client from "@/api/client";
 
 export default function ResetPasswordPage() {
@@ -32,7 +38,8 @@ export default function ResetPasswordPage() {
       await client.post("/api/auth/reset-password", { token, password });
       navigate("/login?reset=1");
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
+      const msg = (err as { response?: { data?: { error?: string } } })
+        ?.response?.data?.error;
       setError(msg ?? "Invalid or expired reset link.");
     } finally {
       setLoading(false);
@@ -42,7 +49,13 @@ export default function ResetPasswordPage() {
   if (!token) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4">
-        <p className="text-muted-foreground">Invalid reset link. <Link to="/forgot-password" className="text-primary hover:underline">Request a new one</Link>.</p>
+        <p className="text-muted-foreground">
+          Invalid reset link.{" "}
+          <Link to="/forgot-password" className="text-primary hover:underline">
+            Request a new one
+          </Link>
+          .
+        </p>
       </div>
     );
   }
@@ -52,7 +65,9 @@ export default function ResetPasswordPage() {
       <Card>
         <CardHeader>
           <CardTitle>Reset password</CardTitle>
-          <CardDescription>Choose a new password for your account.</CardDescription>
+          <CardDescription>
+            Choose a new password for your account.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -79,7 +94,9 @@ export default function ResetPasswordPage() {
               />
             </div>
             {error && (
-              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {error}
+              </p>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Resetting…" : "Reset password"}

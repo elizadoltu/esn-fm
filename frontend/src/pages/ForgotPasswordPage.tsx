@@ -3,7 +3,13 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
 import client from "@/api/client";
 
@@ -33,7 +39,8 @@ export default function ForgotPasswordPage() {
         <CheckCircle2 className="h-12 w-12 text-primary" />
         <p className="text-lg font-semibold">Check your email</p>
         <p className="text-sm text-muted-foreground text-center max-w-xs">
-          If an account with that email exists, we've sent a password reset link. Check your inbox (and spam folder).
+          If an account with that email exists, we've sent a password reset
+          link. Check your inbox (and spam folder).
         </p>
         <Link to="/login" className="text-sm text-primary hover:underline">
           Back to sign in
@@ -47,7 +54,9 @@ export default function ForgotPasswordPage() {
       <Card>
         <CardHeader>
           <CardTitle>Forgot password</CardTitle>
-          <CardDescription>Enter your email and we'll send you a reset link.</CardDescription>
+          <CardDescription>
+            Enter your email and we'll send you a reset link.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -63,7 +72,9 @@ export default function ForgotPasswordPage() {
               />
             </div>
             {error && (
-              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {error}
+              </p>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Sending…" : "Send reset link"}

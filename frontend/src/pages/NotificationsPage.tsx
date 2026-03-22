@@ -192,53 +192,55 @@ export default function NotificationsPage() {
       )}
 
       <div className="space-y-1">
-        {notifications.filter((n) => n.type !== "new_dm").map((n) => (
-          <Link
-            key={n.id}
-            to={notificationLink(n, user?.username ?? "")}
-            onClick={() => {
-              if (!n.is_read) markOne.mutate(n.id);
-            }}
-            className={`group flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-accent ${
-              n.is_read ? "" : "bg-accent/40"
-            }`}
-          >
-            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-              {notificationIcon(n.type)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={`text-sm ${n.is_read ? "" : "font-medium"}`}>
-                {notificationText(n)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {timeAgo(n.created_at)}
-              </p>
-              {n.type === "follow_request" && n.actor && (
-                <FollowRequestActions
-                  n={n}
-                  onDone={() => markOne.mutate(n.id)}
-                />
-              )}
-            </div>
-            <div className="flex flex-col items-center gap-1 shrink-0">
-              {!n.is_read && (
-                <div className="h-2 w-2 rounded-full bg-primary" />
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => {
-                  e.preventDefault();
-                  deleteNotif.mutate(n.id);
-                }}
-                disabled={deleteNotif.isPending}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-          </Link>
-        ))}
+        {notifications
+          .filter((n) => n.type !== "new_dm")
+          .map((n) => (
+            <Link
+              key={n.id}
+              to={notificationLink(n, user?.username ?? "")}
+              onClick={() => {
+                if (!n.is_read) markOne.mutate(n.id);
+              }}
+              className={`group flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-accent ${
+                n.is_read ? "" : "bg-accent/40"
+              }`}
+            >
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                {notificationIcon(n.type)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm ${n.is_read ? "" : "font-medium"}`}>
+                  {notificationText(n)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {timeAgo(n.created_at)}
+                </p>
+                {n.type === "follow_request" && n.actor && (
+                  <FollowRequestActions
+                    n={n}
+                    onDone={() => markOne.mutate(n.id)}
+                  />
+                )}
+              </div>
+              <div className="flex flex-col items-center gap-1 shrink-0">
+                {!n.is_read && (
+                  <div className="h-2 w-2 rounded-full bg-primary" />
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    deleteNotif.mutate(n.id);
+                  }}
+                  disabled={deleteNotif.isPending}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            </Link>
+          ))}
       </div>
     </div>
   );

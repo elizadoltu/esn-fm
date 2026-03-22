@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
-import { showBrowserNotification } from './useBrowserNotifications';
-import type { Notification } from '@/api/notifications.api';
+import { useEffect, useRef } from "react";
+import { showBrowserNotification } from "./useBrowserNotifications";
+import type { Notification } from "@/api/notifications.api";
 
 export function useBrowserNotifTrigger(notifications: Notification[]) {
   const seenIds = useRef<Set<string>>(new Set(notifications.map((n) => n.id)));
@@ -16,7 +16,8 @@ export function useBrowserNotifTrigger(notifications: Notification[]) {
     for (const n of notifications) {
       if (!seenIds.current.has(n.id)) {
         seenIds.current.add(n.id);
-        const actorName = n.actor?.display_name ?? n.actor?.username ?? 'Someone';
+        const actorName =
+          n.actor?.display_name ?? n.actor?.username ?? "Someone";
         const messages: Record<string, string> = {
           new_like: `${actorName} liked your answer`,
           new_comment: `${actorName} commented on your answer`,
@@ -27,7 +28,10 @@ export function useBrowserNotifTrigger(notifications: Notification[]) {
           new_dm: `${actorName} sent you a message`,
           follow_request: `${actorName} wants to follow you`,
         };
-        showBrowserNotification('ESN FM', messages[n.type] ?? 'New notification');
+        showBrowserNotification(
+          "ESN FM",
+          messages[n.type] ?? "New notification"
+        );
       }
     }
   }, [notifications]);

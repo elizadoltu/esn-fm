@@ -8,16 +8,20 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Bell } from "lucide-react";
-import { getBrowserNotifEnabled, requestAndEnable, setBrowserNotifEnabled } from "@/hooks/useBrowserNotifications";
+import {
+  getBrowserNotifEnabled,
+  requestAndEnable,
+  setBrowserNotifEnabled,
+} from "@/hooks/useBrowserNotifications";
 import ImageUpload from "@/components/ImageUpload";
 
 export default function SettingsPage() {
   const { login: saveLogin, token, logout } = useAuth();
   const navigate = useNavigate();
   const [notifEnabled, setNotifEnabled] = useState(getBrowserNotifEnabled);
-  const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unsupported'>(
-    'Notification' in globalThis ? Notification.permission : 'unsupported'
-  );
+  const [notifPermission, setNotifPermission] = useState<
+    NotificationPermission | "unsupported"
+  >("Notification" in globalThis ? Notification.permission : "unsupported");
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,10 +65,15 @@ export default function SettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const deleteLabel = deleteConfirm ? "Confirm — cannot be undone" : "Deactivate account";
+  const deleteLabel = deleteConfirm
+    ? "Confirm — cannot be undone"
+    : "Deactivate account";
 
   async function handleDeleteAccount() {
-    if (!deleteConfirm) { setDeleteConfirm(true); return; }
+    if (!deleteConfirm) {
+      setDeleteConfirm(true);
+      return;
+    }
     setDeleting(true);
     try {
       await deleteAccount();
@@ -80,7 +89,9 @@ export default function SettingsPage() {
   async function handleEnableNotif() {
     const granted = await requestAndEnable();
     setNotifEnabled(granted);
-    setNotifPermission('Notification' in globalThis ? Notification.permission : 'unsupported');
+    setNotifPermission(
+      "Notification" in globalThis ? Notification.permission : "unsupported"
+    );
   }
 
   function handleDisableNotif() {
@@ -271,21 +282,29 @@ export default function SettingsPage() {
                 id="browser_notif"
                 type="checkbox"
                 checked={notifEnabled}
-                disabled={notifPermission === 'denied' || notifPermission === 'unsupported'}
-                onChange={(e) => e.target.checked ? handleEnableNotif() : handleDisableNotif()}
+                disabled={
+                  notifPermission === "denied" ||
+                  notifPermission === "unsupported"
+                }
+                onChange={(e) =>
+                  e.target.checked ? handleEnableNotif() : handleDisableNotif()
+                }
                 className="mt-0.5 h-4 w-4 rounded border-input accent-primary disabled:opacity-50"
               />
               <div>
-                <Label htmlFor="browser_notif" className="cursor-pointer flex items-center gap-1.5">
+                <Label
+                  htmlFor="browser_notif"
+                  className="cursor-pointer flex items-center gap-1.5"
+                >
                   <Bell className="h-4 w-4" />
                   Browser notifications
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  {notifPermission === 'denied'
-                    ? 'Notifications are blocked in your browser settings. Please allow them manually.'
-                    : notifPermission === 'unsupported'
-                    ? 'Your browser does not support notifications.'
-                    : 'Get notified instantly when you receive questions, answers, or messages.'}
+                  {notifPermission === "denied"
+                    ? "Notifications are blocked in your browser settings. Please allow them manually."
+                    : notifPermission === "unsupported"
+                      ? "Your browser does not support notifications."
+                      : "Get notified instantly when you receive questions, answers, or messages."}
                 </p>
               </div>
             </div>
@@ -295,11 +314,14 @@ export default function SettingsPage() {
         {/* Danger Zone */}
         <Card className="border-destructive/40">
           <CardHeader>
-            <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
+            <CardTitle className="text-base text-destructive">
+              Danger Zone
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-3">
-              Deactivating your account anonymises your profile. Your questions and answers remain but your name shows as "Deleted User".
+              Deactivating your account anonymises your profile. Your questions
+              and answers remain but your name shows as "Deleted User".
             </p>
             <Button
               type="button"

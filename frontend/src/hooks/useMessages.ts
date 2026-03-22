@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getConversations, getMessages, sendDm, getUnreadDmCount, markConversationRead } from "@/api/dm.api";
+import {
+  getConversations,
+  getMessages,
+  sendDm,
+  getUnreadDmCount,
+  markConversationRead,
+} from "@/api/dm.api";
 import { getToken } from "@/lib/auth";
 
 export function useConversations() {
@@ -33,7 +39,7 @@ export function useSendDm(username: string) {
 export function useUnreadDmCount() {
   const enabled = !!getToken();
   return useQuery({
-    queryKey: ['dm', 'unread-count'],
+    queryKey: ["dm", "unread-count"],
     queryFn: getUnreadDmCount,
     enabled,
     refetchInterval: enabled ? 5_000 : false,
@@ -45,8 +51,8 @@ export function useMarkConversationRead(username: string) {
   return useMutation({
     mutationFn: () => markConversationRead(username),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['dm', 'unread-count'] });
-      qc.invalidateQueries({ queryKey: ['conversations'] });
+      qc.invalidateQueries({ queryKey: ["dm", "unread-count"] });
+      qc.invalidateQueries({ queryKey: ["conversations"] });
     },
   });
 }

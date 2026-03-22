@@ -46,7 +46,7 @@ export async function sendDm(data: {
 }
 
 export async function getUnreadDmCount(): Promise<number> {
-  const res = await client.get<{ count: number }>('/api/dm/unread-count');
+  const res = await client.get<{ count: number }>("/api/dm/unread-count");
   return res.data.count;
 }
 

@@ -20,10 +20,12 @@ export default function ConversationPage() {
   const messages = data?.messages ?? [];
 
   // Last message I sent (for "Sent" indicator)
-  const lastSentId = [...messages].reverse().find((m) => m.sender_id === me?.id)?.id ?? null;
+  const lastSentId =
+    [...messages].reverse().find((m) => m.sender_id === me?.id)?.id ?? null;
   // Last message I sent that the recipient has read (for "Seen" indicator)
   const lastSeenId =
-    [...messages].reverse().find((m) => m.sender_id === me?.id && m.is_read)?.id ?? null;
+    [...messages].reverse().find((m) => m.sender_id === me?.id && m.is_read)
+      ?.id ?? null;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

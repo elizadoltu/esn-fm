@@ -48,5 +48,5 @@ export async function updateProfile(
 }
 
 export async function deleteAccount(): Promise<void> {
-  await client.delete('/api/users/me');
+  await client.delete("/api/users/me");
 }
