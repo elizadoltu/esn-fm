@@ -11,7 +11,7 @@ const options: Options = {
   definition: {
     openapi: '3.1.0',
     info: {
-      title: 'ESN HR App API',
+      title: 'ESN FM App API',
       version: '1.0.0',
       description: 'API documentation for ESN HR App using Scalar',
     },
