@@ -1,0 +1,49 @@
+name: Backend Tests
+
+on:
+  workflow_call:
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'backend/**'
+      - 'package.json'
+      - '.github/workflows/run-tests-be.yml'
+  push:
+    branches: [main, dev]
+    paths:
+      - 'backend/**'
+      - 'package.json'
+      - '.github/workflows/run-tests-be.yml'
+
+jobs:
+  run-tests-be:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: 📝 Lint backend
+        run: npm run lint:backend
+
+      - name: 🎨 Check backend formatting
+        run: npm run format:check:backend
+
+      - name: 🧪 Run backend tests
+        run: npm run test:run:backend
+
+      - name: 🏗️  Build backend
+        run: npm run build:backend
+
+      - name: ✅ All backend checks passed
+        run: echo "Backend validation complete!"
+

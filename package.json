@@ -1,0 +1,46 @@
+{
+  "name": "esn-fm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install:all": "npm install --workspaces",
+    "start": "npm run start --workspace backend",
+    "dev": "concurrently \"npm run dev --workspace frontend\" \"npm run dev --workspace backend\"",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "dev:backend": "npm run dev --workspace backend",
+    "lint": "npm run lint --workspace frontend",
+    "lint:backend": "npm run lint --workspace backend",
+    "format:check": "npm run format:check --workspace frontend",
+    "format:check:backend": "npm run format:check --workspace backend",
+    "build": "npm run build --workspace frontend",
+    "build:backend": "npm run build --workspace backend",
+    "test:run": "npm run test --workspace frontend",
+    "test:run:backend": "npm run test --workspace backend",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elizadoltu/esn-fm.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/elizadoltu/esn-fm/issues"
+  },
+  "homepage": "https://github.com/elizadoltu/esn-fm#readme",
+  "dependencies": {
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "husky": "^9.0.0"
+  }
+}
