@@ -1,0 +1,39 @@
+echo "🔍 Running pre-push checks..."
+
+# Run from root to use workspace scripts
+echo ""
+echo "============================================"
+echo "🎨 FRONTEND CHECKS"
+echo "============================================"
+
+echo "📝 Linting frontend..."
+npm run lint || exit 1
+
+echo "🎨 Checking frontend formatting..."
+npm run format:check || exit 1
+
+echo "🧪 Running frontend tests..."
+npm run test:run || exit 1
+
+echo "🏗️  Building frontend..."
+npm run build || exit 1
+
+echo ""
+echo "============================================"
+echo "⚙️  BACKEND CHECKS"
+echo "============================================"
+
+echo "📝 Linting backend..."
+npm run lint:backend || exit 1
+
+echo "🎨 Checking backend formatting..."
+npm run format:check:backend || exit 1
+
+echo "🧪 Running backend tests..."
+npm run test:run:backend || exit 1
+
+echo "🏗️  Building backend..."
+npm run build:backend || exit 1
+
+echo ""
+echo "✅ All checks passed! Pushing code..."
