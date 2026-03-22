@@ -4,8 +4,10 @@ import { followUser, unfollowUser } from "@/api/follows.api";
 export function useFollowToggle(username: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (action: "follow" | "unfollow") =>
-      action === "follow" ? followUser(username) : unfollowUser(username),
+    mutationFn: async (action: "follow" | "unfollow") => {
+      if (action === "follow") await followUser(username);
+      else await unfollowUser(username);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["profile", username] });
       qc.invalidateQueries({ queryKey: ["followers", username] });
