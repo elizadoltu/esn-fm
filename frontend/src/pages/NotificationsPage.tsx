@@ -15,10 +15,13 @@ import {
   useNotifications,
   useMarkAllRead,
   useMarkRead,
+  useDeleteNotification,
 } from "@/hooks/useNotifications";
 import { approveFollowRequest, declineFollowRequest } from "@/api/follows.api";
 import { Button } from "@/components/ui/button";
 import type { Notification, NotificationType } from "@/api/notifications.api";
+import { useAuth } from "@/context/useAuth";
+import { useBrowserNotifTrigger } from "@/hooks/useBrowserNotifTrigger";
 
 function notificationIcon(type: NotificationType) {
   switch (type) {
@@ -63,15 +66,16 @@ function notificationText(n: Notification): string {
   }
 }
 
-function notificationLink(n: Notification): string {
+function notificationLink(n: Notification, myUsername: string): string {
   switch (n.type) {
     case "new_follower":
     case "follow_request":
     case "new_answer":
+      return `/${n.actor?.username ?? ""}`;
     case "new_like":
     case "new_comment":
     case "new_reply":
-      return `/${n.actor?.username ?? ""}`;
+      return `/${myUsername}`;
     case "new_dm":
       return `/messages/${n.actor?.username ?? ""}`;
     case "new_question":
@@ -146,8 +150,11 @@ function FollowRequestActions({
 
 export default function NotificationsPage() {
   const { data: notifications = [], isLoading } = useNotifications();
+  useBrowserNotifTrigger(notifications);
   const markAll = useMarkAllRead();
   const markOne = useMarkRead();
+  const { user } = useAuth();
+  const deleteNotif = useDeleteNotification();
 
   const unread = notifications.filter((n) => !n.is_read).length;
 
@@ -185,14 +192,14 @@ export default function NotificationsPage() {
       )}
 
       <div className="space-y-1">
-        {notifications.map((n) => (
+        {notifications.filter((n) => n.type !== "new_dm").map((n) => (
           <Link
             key={n.id}
-            to={notificationLink(n)}
+            to={notificationLink(n, user?.username ?? "")}
             onClick={() => {
               if (!n.is_read) markOne.mutate(n.id);
             }}
-            className={`flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-accent ${
+            className={`group flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-accent ${
               n.is_read ? "" : "bg-accent/40"
             }`}
           >
@@ -213,9 +220,23 @@ export default function NotificationsPage() {
                 />
               )}
             </div>
-            {!n.is_read && (
-              <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
-            )}
+            <div className="flex flex-col items-center gap-1 shrink-0">
+              {!n.is_read && (
+                <div className="h-2 w-2 rounded-full bg-primary" />
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => {
+                  e.preventDefault();
+                  deleteNotif.mutate(n.id);
+                }}
+                disabled={deleteNotif.isPending}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
           </Link>
         ))}
       </div>

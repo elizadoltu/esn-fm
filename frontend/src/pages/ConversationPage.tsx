@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Send, UserCircle2 } from "lucide-react";
+import { ArrowLeft, Send, UserCircle2, Check, CheckCheck } from "lucide-react";
 import { useMessages, useSendDm } from "@/hooks/useMessages";
 import { useAuth } from "@/context/useAuth";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,12 @@ export default function ConversationPage() {
   const send = useSendDm(username ?? "");
 
   const messages = data?.messages ?? [];
+
+  // Last message I sent (for "Sent" indicator)
+  const lastSentId = [...messages].reverse().find((m) => m.sender_id === me?.id)?.id ?? null;
+  // Last message I sent that the recipient has read (for "Seen" indicator)
+  const lastSeenId =
+    [...messages].reverse().find((m) => m.sender_id === me?.id && m.is_read)?.id ?? null;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -76,14 +82,26 @@ export default function ConversationPage() {
               key={msg.id}
               className={`flex ${isMine ? "justify-end" : "justify-start"}`}
             >
-              <div
-                className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
-                  isMine
-                    ? "bg-primary text-primary-foreground rounded-br-sm"
-                    : "bg-card border border-border rounded-bl-sm"
-                }`}
-              >
-                {msg.content}
+              <div className="inline-flex flex-col items-end max-w-[75%]">
+                <div
+                  className={`rounded-2xl px-4 py-2.5 text-sm ${
+                    isMine
+                      ? "bg-primary text-primary-foreground rounded-br-sm"
+                      : "bg-card border border-border rounded-bl-sm"
+                  }`}
+                >
+                  {msg.content}
+                </div>
+                {isMine && msg.id === lastSeenId && (
+                  <span className="mt-0.5 flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                    <CheckCheck className="h-3 w-3" /> Seen
+                  </span>
+                )}
+                {isMine && msg.id !== lastSeenId && msg.id === lastSentId && (
+                  <span className="mt-0.5 flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                    <Check className="h-3 w-3" /> Sent
+                  </span>
+                )}
               </div>
             </div>
           );

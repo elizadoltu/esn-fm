@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/context/useAuth";
 import { Button } from "@/components/ui/button";
 import { useUnreadCount } from "@/hooks/useNotifications";
+import { useUnreadDmCount } from "@/hooks/useMessages";
 
 function NotificationBadge({ count }: Readonly<{ count: number }>) {
   if (count === 0) return null;
@@ -31,6 +32,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { data: unreadCount = 0 } = useUnreadCount();
+  const { data: unreadDmCount = 0 } = useUnreadDmCount();
   const [menuOpen, setMenuOpen] = useState(false);
 
   function handleLogout() {
@@ -62,7 +64,12 @@ export default function Navbar() {
           { to: "/inbox", icon: <Inbox className="h-5 w-5" />, label: "Inbox" },
           {
             to: "/messages",
-            icon: <Mail className="h-5 w-5" />,
+            icon: (
+              <span className="relative">
+                <Mail className="h-5 w-5" />
+                <NotificationBadge count={unreadDmCount} />
+              </span>
+            ),
             label: "Messages",
           },
           {

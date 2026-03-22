@@ -136,4 +136,16 @@ router.patch('/:id/read', verifyJWT, async (req: Request, res: Response, next: N
   }
 });
 
+router.delete('/:id', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await pool.query(
+      `DELETE FROM notifications WHERE id = $1 AND recipient_id = $2`,
+      [req.params.id, req.user!.id]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

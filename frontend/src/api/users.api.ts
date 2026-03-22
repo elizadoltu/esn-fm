@@ -46,3 +46,7 @@ export async function updateProfile(
   const res = await client.patch<Profile>("/api/users/me", data);
   return res.data;
 }
+
+export async function deleteAccount(): Promise<void> {
+  await client.delete('/api/users/me');
+}

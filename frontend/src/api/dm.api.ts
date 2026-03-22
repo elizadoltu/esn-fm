@@ -44,3 +44,12 @@ export async function sendDm(data: {
   const res = await client.post<DmMessage>("/api/dm", data);
   return res.data;
 }
+
+export async function getUnreadDmCount(): Promise<number> {
+  const res = await client.get<{ count: number }>('/api/dm/unread-count');
+  return res.data.count;
+}
+
+export async function markConversationRead(username: string): Promise<void> {
+  await client.patch(`/api/dm/${username}/read`);
+}

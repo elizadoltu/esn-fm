@@ -20,12 +20,12 @@ export default function AdminPage() {
   const [userOffset, setUserOffset] = useState(0);
   const [reportOffset, setReportOffset] = useState(0);
 
-  const { data: stats } = useAdminStats();
-  const { data: usersData } = useAdminUsers({
+  const { data: stats, isLoading: statsLoading, error: statsError } = useAdminStats();
+  const { data: usersData, isLoading: usersLoading, error: usersError } = useAdminUsers({
     q: userSearch || undefined,
     offset: userOffset,
   });
-  const { data: reportsData } = useAdminReports({
+  const { data: reportsData, isLoading: reportsLoading, error: reportsError } = useAdminReports({
     status: reportStatus,
     offset: reportOffset,
   });
@@ -61,6 +61,12 @@ export default function AdminPage() {
       </div>
 
       {/* ── Stats ────────────────────────────────────────────────── */}
+      {tab === "stats" && statsLoading && (
+        <p className="text-sm text-muted-foreground">Loading stats…</p>
+      )}
+      {tab === "stats" && statsError && (
+        <p className="text-sm text-destructive">Failed to load stats. Check that your account has admin access and the server is reachable.</p>
+      )}
       {tab === "stats" && stats && (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
@@ -97,6 +103,9 @@ export default function AdminPage() {
               className="pl-9"
             />
           </div>
+
+          {usersLoading && <p className="text-sm text-muted-foreground">Loading users…</p>}
+          {usersError && <p className="text-sm text-destructive">Failed to load users. You may not have admin access or the server returned an error.</p>}
 
           <div className="overflow-x-auto rounded-lg border border-border">
             <table className="w-full text-sm">
@@ -227,6 +236,9 @@ export default function AdminPage() {
               </button>
             ))}
           </div>
+
+          {reportsLoading && <p className="text-sm text-muted-foreground">Loading reports…</p>}
+          {reportsError && <p className="text-sm text-destructive">Failed to load reports. Check admin access.</p>}
 
           <div className="space-y-3">
             {reportsData?.reports.map((r) => (

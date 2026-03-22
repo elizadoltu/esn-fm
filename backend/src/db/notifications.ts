@@ -1,4 +1,5 @@
 import { pool } from './pool.js';
+import { sendSSE } from '../lib/sse.js';
 
 export type NotificationType =
   | 'new_question'
@@ -22,4 +23,5 @@ export async function createNotification(
      VALUES ($1, $2, $3, $4)`,
     [recipientId, type, referenceId, actorId]
   );
+  sendSSE(recipientId, 'notification', { type, referenceId, actorId });
 }

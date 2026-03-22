@@ -171,4 +171,38 @@ router.patch('/me', verifyJWT, async (req: Request, res: Response, next: NextFun
   }
 });
 
+/**
+ * @openapi
+ * /api/users/me:
+ *   delete:
+ *     summary: Deactivate (soft-delete) your account
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Account deactivated
+ */
+router.delete('/me', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await pool.query(
+      `UPDATE users SET
+         is_deleted = TRUE,
+         deleted_at = NOW(),
+         display_name = 'Deleted User',
+         bio = '',
+         avatar_url = NULL,
+         cover_image_url = NULL,
+         location = NULL,
+         website = NULL,
+         email = 'deleted_' || id || '@deleted.invalid'
+       WHERE id = $1`,
+      [req.user!.id]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;
