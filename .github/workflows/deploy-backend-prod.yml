@@ -9,9 +9,15 @@ jobs:
   run-tests-be:
     uses: ./.github/workflows/run-tests-be.yml
 
+  migrate:
+    needs: run-tests-be
+    uses: ./.github/workflows/migrate-db.yml
+    secrets:
+      DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
+
   deploy:
     runs-on: ubuntu-latest
-    needs: run-tests-be
+    needs: migrate
     environment: production
 
     steps:

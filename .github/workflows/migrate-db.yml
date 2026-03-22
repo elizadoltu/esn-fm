@@ -1,0 +1,35 @@
+name: Run Database Migrations
+
+# Called by deploy workflows — not triggered directly.
+# Caller must pass the target DATABASE_URL as a secret input.
+on:
+  workflow_call:
+    secrets:
+      DATABASE_URL:
+        required: true
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: 🗄️ Run database migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NODE_ENV: production
+        run: npm run db:migrate --workspace=backend
+
+      - name: ✅ Migrations complete
+        run: echo "Database migrations applied successfully."
