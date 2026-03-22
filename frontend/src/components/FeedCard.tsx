@@ -7,6 +7,7 @@ import {
   Send,
   Trash2,
 } from "lucide-react";
+import { extractApiError } from "@/api/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -132,6 +133,7 @@ export default function FeedCard({
 }: Readonly<FeedCardProps>) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [commentError, setCommentError] = useState<string | null>(null);
   const [replyTo, setReplyTo] = useState<{ id: string; name: string } | null>(
     null
   );
@@ -144,13 +146,18 @@ export default function FeedCard({
 
   async function handleSubmitComment() {
     if (!commentText.trim()) return;
-    await postComment.mutateAsync({
-      answer_id: item.answer_id,
-      content: commentText.trim(),
-      parent_comment_id: replyTo?.id,
-    });
-    setCommentText("");
-    setReplyTo(null);
+    setCommentError(null);
+    try {
+      await postComment.mutateAsync({
+        answer_id: item.answer_id,
+        content: commentText.trim(),
+        parent_comment_id: replyTo?.id,
+      });
+      setCommentText("");
+      setReplyTo(null);
+    } catch (err) {
+      setCommentError(extractApiError(err, "Failed to post comment. Try again."));
+    }
   }
 
   return (
@@ -283,9 +290,16 @@ export default function FeedCard({
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
-                <p className="text-right text-xs text-muted-foreground">
-                  {commentText.length}/200
-                </p>
+                <div className="flex items-center justify-between">
+                  {commentError ? (
+                    <p className="text-xs text-destructive">{commentError}</p>
+                  ) : (
+                    <span />
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {commentText.length}/200
+                  </p>
+                </div>
               </div>
             )}
           </div>

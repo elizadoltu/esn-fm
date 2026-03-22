@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { Question } from "@/api/questions.api";
+import { extractApiError } from "@/api/client";
 
 interface QuestionCardProps {
   question: Question;
@@ -19,15 +20,21 @@ export default function QuestionCard({
   onDelete,
   isAnswering = false,
   isDeleting = false,
-}: QuestionCardProps) {
+}: Readonly<QuestionCardProps>) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   async function handleAnswer() {
     if (!text.trim()) return;
-    await onAnswer(question.id, text);
-    setOpen(false);
-    setText("");
+    setError(null);
+    try {
+      await onAnswer(question.id, text);
+      setOpen(false);
+      setText("");
+    } catch (err) {
+      setError(extractApiError(err, "Failed to post answer. Please try again."));
+    }
   }
 
   return (
@@ -48,6 +55,11 @@ export default function QuestionCard({
               rows={4}
               autoFocus
             />
+            {error && (
+              <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                {error}
+              </p>
+            )}
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">
                 {text.length}/1000
@@ -59,6 +71,7 @@ export default function QuestionCard({
                   onClick={() => {
                     setOpen(false);
                     setText("");
+                    setError(null);
                   }}
                 >
                   <X className="h-4 w-4" />

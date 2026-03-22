@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MessageSquare } from "lucide-react";
 import { register } from "@/api/auth.api";
+import { extractApiError } from "@/api/client";
 import { useAuth } from "@/context/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,11 +41,7 @@ export default function RegisterPage() {
       saveLogin(res.token, res.user);
       navigate(`/${res.user.username}`);
     } catch (err: unknown) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Registration failed. Please try again."
-      );
+      setError(extractApiError(err, "Registration failed. Please try again."));
     } finally {
       setLoading(false);
     }
