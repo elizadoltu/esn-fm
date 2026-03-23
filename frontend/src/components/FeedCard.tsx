@@ -185,7 +185,9 @@ export default function FeedCard({
     null
   );
   const [commentImageFile, setCommentImageFile] = useState<File | null>(null);
-  const [commentImagePreview, setCommentImagePreview] = useState<string | null>(null);
+  const [commentImagePreview, setCommentImagePreview] = useState<string | null>(
+    null
+  );
   const [uploadingImage, setUploadingImage] = useState(false);
   const commentImageInputRef = useRef<HTMLInputElement>(null);
 

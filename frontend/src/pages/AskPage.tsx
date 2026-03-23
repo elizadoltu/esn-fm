@@ -43,7 +43,8 @@ export default function AskPage() {
       await sendQuestion({
         recipient_username: username,
         content,
-        sender_name: (isSelf || anonymous) ? undefined : senderName || me?.display_name,
+        sender_name:
+          isSelf || anonymous ? undefined : senderName || me?.display_name,
         show_in_feed: showInFeed,
       });
       setSubmitted(true);
@@ -106,7 +107,10 @@ export default function AskPage() {
                     onChange={(e) => setAnonymous(e.target.checked)}
                     className="h-4 w-4 rounded border-input accent-primary"
                   />
-                  <Label htmlFor="anonymous" className="cursor-pointer font-normal">
+                  <Label
+                    htmlFor="anonymous"
+                    className="cursor-pointer font-normal"
+                  >
                     Send anonymously
                   </Label>
                 </div>

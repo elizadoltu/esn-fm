@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { UserCircle2, MapPin, Globe, Users, Mail, X, Lock, Send, CheckCircle2 } from "lucide-react";
+import {
+  UserCircle2,
+  MapPin,
+  Globe,
+  Users,
+  Mail,
+  X,
+  Lock,
+  Send,
+  CheckCircle2,
+} from "lucide-react";
 import ReportButton from "@/components/ReportButton";
 import { useQuery } from "@tanstack/react-query";
 import { useProfile, useFeed, useLike } from "@/hooks/useProfile";
@@ -44,7 +54,8 @@ function AskForm({
       await sendQuestion({
         recipient_username: recipientUsername,
         content,
-        sender_name: (isSelf || anonymous) ? undefined : senderName || me?.display_name,
+        sender_name:
+          isSelf || anonymous ? undefined : senderName || me?.display_name,
         show_in_feed: showInFeed,
       });
       setSubmitted(true);
@@ -91,7 +102,9 @@ function AskForm({
               required
               className="resize-none text-sm"
             />
-            <p className={`text-right text-xs mt-1 ${content.length >= MAX_CHARS ? "text-destructive" : "text-muted-foreground"}`}>
+            <p
+              className={`text-right text-xs mt-1 ${content.length >= MAX_CHARS ? "text-destructive" : "text-muted-foreground"}`}
+            >
               {content.length}/{MAX_CHARS}
             </p>
           </div>
@@ -106,7 +119,10 @@ function AskForm({
                   onChange={(e) => setAnonymous(e.target.checked)}
                   className="h-4 w-4 rounded border-input accent-primary"
                 />
-                <Label htmlFor={`anon-${recipientUsername}`} className="cursor-pointer font-normal text-sm">
+                <Label
+                  htmlFor={`anon-${recipientUsername}`}
+                  className="cursor-pointer font-normal text-sm"
+                >
                   Send anonymously
                 </Label>
               </div>
@@ -131,16 +147,22 @@ function AskForm({
               onChange={(e) => setShowInFeed(e.target.checked)}
               className="h-4 w-4 rounded border-input accent-primary"
             />
-            <Label htmlFor={`feed-${recipientUsername}`} className="cursor-pointer font-normal text-sm">
+            <Label
+              htmlFor={`feed-${recipientUsername}`}
+              className="cursor-pointer font-normal text-sm"
+            >
               Show on public feed
             </Label>
           </div>
 
-          {error && (
-            <p className="text-xs text-destructive">{error}</p>
-          )}
+          {error && <p className="text-xs text-destructive">{error}</p>}
 
-          <Button type="submit" size="sm" className="w-full" disabled={loading || !content.trim()}>
+          <Button
+            type="submit"
+            size="sm"
+            className="w-full"
+            disabled={loading || !content.trim()}
+          >
             <Send className="h-4 w-4 mr-1" />
             {loading ? "Sending…" : "Send question"}
           </Button>

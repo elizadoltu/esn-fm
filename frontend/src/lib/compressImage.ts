@@ -40,7 +40,11 @@ export function compressImage(file: File): Promise<File> {
             resolve(file);
             return;
           }
-          resolve(new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" }));
+          resolve(
+            new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), {
+              type: "image/jpeg",
+            })
+          );
         },
         "image/jpeg",
         JPEG_QUALITY
