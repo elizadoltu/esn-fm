@@ -64,7 +64,13 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
       `INSERT INTO comments (answer_id, author_id, parent_comment_id, content, image_url)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, answer_id, author_id, parent_comment_id, content, image_url, created_at`,
-      [data.answer_id, req.user!.id, data.parent_comment_id ?? null, data.content, data.image_url ?? null]
+      [
+        data.answer_id,
+        req.user!.id,
+        data.parent_comment_id ?? null,
+        data.content,
+        data.image_url ?? null,
+      ]
     );
 
     const comment = result.rows[0];
