@@ -10,7 +10,8 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const rawData = atob(base64);
   const buffer = new ArrayBuffer(rawData.length);
   const view = new Uint8Array(buffer);
-  for (let i = 0; i < rawData.length; i++) view[i] = rawData.codePointAt(i) ?? 0;
+  for (let i = 0; i < rawData.length; i++)
+    view[i] = rawData.codePointAt(i) ?? 0;
   return view;
 }
 
