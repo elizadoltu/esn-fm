@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/useAuth";
 import { updateProfile, getMe, deleteAccount } from "@/api/users.api";
@@ -35,8 +36,9 @@ function notifStatusText(
 }
 
 export default function SettingsPage() {
-  const { login: saveLogin, token, logout } = useAuth();
+  const { login: saveLogin, token, logout, user } = useAuth();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [notifEnabled, setNotifEnabled] = useState(getBrowserNotifEnabled);
   const [notifPermission, setNotifPermission] = useState<
     NotificationPermission | "unsupported"
@@ -170,6 +172,9 @@ export default function SettingsPage() {
           ...updated,
           email: updated.email ?? "",
         } as Parameters<typeof saveLogin>[1]);
+      }
+      if (user?.username) {
+        qc.invalidateQueries({ queryKey: ["profile", user.username] });
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
