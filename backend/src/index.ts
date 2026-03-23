@@ -19,6 +19,7 @@ import blockRoutes from './routes/block.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import eventsRouter from './routes/events.routes.js';
+import pushRouter from './routes/push.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 if (!process.env.JWT_SECRET) {
@@ -74,6 +75,7 @@ app.use('/api/blocks', blockRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/events', eventsRouter);
+app.use('/api/push', pushRouter);
 
 app.use(errorHandler);
 

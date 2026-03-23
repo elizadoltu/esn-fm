@@ -2,18 +2,37 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/useAuth";
 import { updateProfile, getMe, deleteAccount } from "@/api/users.api";
+import { extractApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Bell } from "lucide-react";
+import { CheckCircle2, Bell, Download, Smartphone } from "lucide-react";
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
 import {
   getBrowserNotifEnabled,
   requestAndEnable,
-  setBrowserNotifEnabled,
+  disableNotifications,
 } from "@/hooks/useBrowserNotifications";
 import ImageUpload from "@/components/ImageUpload";
+
+function notifStatusText(
+  permission: NotificationPermission | "unsupported",
+  enabled: boolean
+): string {
+  if (permission === "denied")
+    return "Notifications are blocked. To enable, go to browser settings → Site settings → Notifications and allow this site.";
+  if (permission === "unsupported")
+    return "Your browser does not support notifications.";
+  if (!enabled && permission === "granted")
+    return "Notifications are paused. To fully disable them, go to browser settings → Site settings → Notifications.";
+  return "Get notified instantly when you receive questions, answers, or messages.";
+}
 
 export default function SettingsPage() {
   const { login: saveLogin, token, logout } = useAuth();
@@ -22,6 +41,35 @@ export default function SettingsPage() {
   const [notifPermission, setNotifPermission] = useState<
     NotificationPermission | "unsupported"
   >("Notification" in globalThis ? Notification.permission : "unsupported");
+  const [installPrompt, setInstallPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(
+    () => globalThis.matchMedia?.("(display-mode: standalone)").matches ?? false
+  );
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e as BeforeInstallPromptEvent);
+    };
+    const installedHandler = () => setIsInstalled(true);
+    globalThis.addEventListener("beforeinstallprompt", handler);
+    globalThis.addEventListener("appinstalled", installedHandler);
+    return () => {
+      globalThis.removeEventListener("beforeinstallprompt", handler);
+      globalThis.removeEventListener("appinstalled", installedHandler);
+    };
+  }, []);
+
+  async function handleInstall() {
+    if (!installPrompt) return;
+    await installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === "accepted") {
+      setInstallPrompt(null);
+      setIsInstalled(true);
+    }
+  }
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,8 +143,11 @@ export default function SettingsPage() {
   }
 
   function handleDisableNotif() {
-    setBrowserNotifEnabled(false);
+    disableNotifications().catch(() => {});
     setNotifEnabled(false);
+    setNotifPermission(
+      "Notification" in globalThis ? Notification.permission : "unsupported"
+    );
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -123,7 +174,9 @@ export default function SettingsPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to save settings.");
+      setError(
+        extractApiError(err, "Failed to save settings. Please try again.")
+      );
     } finally {
       setLoading(false);
     }
@@ -300,13 +353,53 @@ export default function SettingsPage() {
                   Browser notifications
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  {notifPermission === "denied"
-                    ? "Notifications are blocked in your browser settings. Please allow them manually."
-                    : notifPermission === "unsupported"
-                      ? "Your browser does not support notifications."
-                      : "Get notified instantly when you receive questions, answers, or messages."}
+                  {notifStatusText(notifPermission, notifEnabled)}
                 </p>
               </div>
+            </div>
+
+            <div className="border-t border-border pt-4">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Smartphone className="h-4 w-4" />
+                <span className="text-sm font-medium">Install app</span>
+              </div>
+
+              {isInstalled && (
+                <p className="text-xs text-muted-foreground">
+                  ESN FM is installed on this device.
+                </p>
+              )}
+              {!isInstalled && installPrompt && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Add ESN FM to your home screen for a native app experience.
+                    {!notifEnabled && (
+                      <span className="block mt-1 text-amber-500">
+                        Enable notifications above to receive push alerts after
+                        installing.
+                      </span>
+                    )}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleInstall}
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Install ESN FM
+                  </Button>
+                </div>
+              )}
+              {!isInstalled && !installPrompt && (
+                <p className="text-xs text-muted-foreground">
+                  Open this page in your mobile browser and use{" "}
+                  <span className="font-medium">Add to Home Screen</span> to
+                  install the app. Enable notifications above to receive push
+                  alerts after installing.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

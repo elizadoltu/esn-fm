@@ -14,7 +14,7 @@ export function useNotifications() {
     queryKey: ["notifications"],
     queryFn: () => getNotifications(),
     enabled,
-    refetchInterval: enabled ? 10_000 : false,
+    refetchInterval: enabled ? 60_000 : false,
   });
 }
 
@@ -24,7 +24,7 @@ export function useUnreadCount() {
     queryKey: ["notifications", "unread-count"],
     queryFn: getUnreadCount,
     enabled,
-    refetchInterval: enabled ? 10_000 : false,
+    refetchInterval: enabled ? 60_000 : false,
   });
 }
 

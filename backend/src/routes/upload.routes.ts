@@ -63,7 +63,10 @@ router.post(
         return;
       }
 
-      const uploadType = (req.body.type as string) === 'cover' ? 'cover' : 'avatar';
+      const rawType = req.body.type as string;
+      let uploadType = 'avatar';
+      if (rawType === 'cover') uploadType = 'cover';
+      else if (rawType === 'answer') uploadType = 'answer';
       const folder = `esnfm/${uploadType}s`;
 
       // Stream buffer to Cloudinary
@@ -76,7 +79,9 @@ router.post(
             transformation:
               uploadType === 'avatar'
                 ? [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }]
-                : [{ width: 1200, height: 400, crop: 'fill' }],
+                : uploadType === 'cover'
+                  ? [{ width: 1200, height: 400, crop: 'fill' }]
+                  : [{ width: 1200, crop: 'limit' }],
           },
           (err, result) => {
             if (err || !result) return reject(err ?? new Error('Upload failed'));

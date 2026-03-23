@@ -3,6 +3,7 @@ import { pool } from '../db/pool.js';
 import { verifyJWT } from '../middleware/auth.js';
 import { sendDmSchema } from '../validators/dm.validator.js';
 import { sendSSE } from '../lib/sse.js';
+import { sendPushToUser } from '../lib/webpush.js';
 
 const router = Router();
 
@@ -101,6 +102,11 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
     );
 
     sendSSE(recipientId, 'dm', { from: req.user!.username });
+    sendPushToUser(recipientId, {
+      title: 'ESN FM',
+      body: `New message from ${req.user!.username}`,
+      url: `/messages/${req.user!.username}`,
+    }).catch(() => {});
     res.status(201).json(result.rows[0]);
   } catch (err) {
     next(err);

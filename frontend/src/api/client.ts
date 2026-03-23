@@ -27,4 +27,16 @@ client.interceptors.response.use(
   }
 );
 
+/** Extract a human-readable error message from an Axios (or unknown) error. */
+export function extractApiError(err: unknown, fallback: string): string {
+  const e = err as {
+    response?: { data?: { error?: string }; status?: number };
+    message?: string;
+  };
+  if (e?.response?.data?.error) return e.response.data.error;
+  if (e?.message === "Network Error")
+    return "Unable to connect. Please check your internet connection.";
+  return fallback;
+}
+
 export default client;

@@ -1,3 +1,8 @@
+import {
+  subscribeToPush,
+  unsubscribeFromPush,
+} from "@/hooks/usePushSubscription";
+
 const STORAGE_KEY = "esn_fm_browser_notif";
 
 export function getBrowserNotifEnabled(): boolean {
@@ -9,23 +14,30 @@ export function setBrowserNotifEnabled(value: boolean): void {
 }
 
 export async function requestAndEnable(): Promise<boolean> {
-  if (!("Notification" in window)) return false;
+  if (!("Notification" in globalThis)) return false;
   if (Notification.permission === "granted") {
     setBrowserNotifEnabled(true);
+    await subscribeToPush();
     return true;
   }
   if (Notification.permission === "denied") return false;
   const result = await Notification.requestPermission();
   if (result === "granted") {
     setBrowserNotifEnabled(true);
+    await subscribeToPush();
     return true;
   }
   return false;
 }
 
+export async function disableNotifications(): Promise<void> {
+  setBrowserNotifEnabled(false);
+  await unsubscribeFromPush();
+}
+
 export function showBrowserNotification(title: string, body: string): void {
-  if (!("Notification" in window)) return;
+  if (!("Notification" in globalThis)) return;
   if (Notification.permission !== "granted") return;
   if (!getBrowserNotifEnabled()) return;
-  new Notification(title, { body, icon: "/favicon.ico" });
+  new Notification(title, { body, icon: "/icons/icon.svg" });
 }

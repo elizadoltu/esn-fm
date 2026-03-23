@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/useAuth";
 import { useSSE } from "@/hooks/useSSE";
+import { usePushSubscription } from "@/hooks/usePushSubscription";
 import Navbar from "@/components/Navbar";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
@@ -34,6 +35,7 @@ function RequireAdmin({ children }: Readonly<{ children: React.ReactNode }>) {
 export default function App() {
   const { isAuthenticated } = useAuth();
   useSSE();
+  usePushSubscription();
 
   return (
     <div className="min-h-screen bg-background">

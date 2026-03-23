@@ -33,8 +33,12 @@ export default function InboxPage() {
           <QuestionCard
             key={q.id}
             question={q}
-            onAnswer={async (questionId, content) => {
-              await answer.mutateAsync({ question_id: questionId, content });
+            onAnswer={async (questionId, content, imageUrl) => {
+              await answer.mutateAsync({
+                question_id: questionId,
+                content,
+                image_url: imageUrl ?? null,
+              });
             }}
             onDelete={(id) => deleteQ.mutate(id)}
             isAnswering={answer.isPending}

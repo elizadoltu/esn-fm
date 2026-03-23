@@ -7,6 +7,7 @@ export interface FeedItem {
   asked_at: string;
   answer_id: string;
   answer: string;
+  answer_image_url?: string | null;
   answered_at: string;
   likes: number;
   liked_by_me: boolean;
@@ -36,6 +37,7 @@ export async function getFeed(
 export async function postAnswer(data: {
   question_id: string;
   content: string;
+  image_url?: string | null;
 }): Promise<void> {
   await client.post("/api/answers", data);
 }

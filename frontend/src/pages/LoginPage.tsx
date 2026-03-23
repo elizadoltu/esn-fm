@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { MessageSquare } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { MessageSquare, CheckCircle2 } from "lucide-react";
 import { login } from "@/api/auth.api";
+import { extractApiError } from "@/api/client";
 import { useAuth } from "@/context/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,9 @@ import {
 export default function LoginPage() {
   const { login: saveLogin } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const justReset = params.get("reset") === "1";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -32,9 +36,7 @@ export default function LoginPage() {
       navigate(`/${res.user.username}`);
     } catch (err: unknown) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Invalid credentials. Please try again."
+        extractApiError(err, "Incorrect email or password. Please try again.")
       );
     } finally {
       setLoading(false);
@@ -51,6 +53,13 @@ export default function LoginPage() {
             Sign in to your account
           </p>
         </div>
+
+        {justReset && (
+          <div className="flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2.5 text-sm text-primary">
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            Password reset successfully. Sign in with your new password.
+          </div>
+        )}
 
         <Card>
           <CardHeader>
