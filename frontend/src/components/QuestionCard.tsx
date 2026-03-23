@@ -1,14 +1,20 @@
-import { useState } from "react";
-import { Trash2, MessageCircle, X, Send } from "lucide-react";
+import { useRef, useState } from "react";
+import { Trash2, MessageCircle, X, Send, Camera, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { Question } from "@/api/questions.api";
 import { extractApiError } from "@/api/client";
+import { uploadImage } from "@/api/upload.api";
+import { compressImage } from "@/lib/compressImage";
 
 interface QuestionCardProps {
   question: Question;
-  onAnswer: (questionId: string, content: string) => Promise<void>;
+  onAnswer: (
+    questionId: string,
+    content: string,
+    imageUrl?: string
+  ) => Promise<void>;
   onDelete: (questionId: string) => void;
   isAnswering?: boolean;
   isDeleting?: boolean;
@@ -23,15 +29,53 @@ export default function QuestionCard({
 }: Readonly<QuestionCardProps>) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function handleImageFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImagePreview(URL.createObjectURL(file));
+    setUploadError(null);
+    setUploading(true);
+    try {
+      const compressed = await compressImage(file);
+      const url = await uploadImage(compressed, "answer");
+      setImageUrl(url);
+      setImagePreview(url);
+    } catch {
+      setUploadError("Upload failed. Try again.");
+      setImagePreview(null);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  function clearImage() {
+    setImageUrl(null);
+    setImagePreview(null);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  function handleClose() {
+    setOpen(false);
+    setText("");
+    clearImage();
+    setError(null);
+    setUploadError(null);
+  }
 
   async function handleAnswer() {
     if (!text.trim()) return;
     setError(null);
     try {
-      await onAnswer(question.id, text);
-      setOpen(false);
-      setText("");
+      await onAnswer(question.id, text, imageUrl ?? undefined);
+      handleClose();
     } catch (err) {
       setError(
         extractApiError(err, "Failed to post answer. Please try again.")
@@ -57,6 +101,53 @@ export default function QuestionCard({
               rows={4}
               autoFocus
             />
+
+            {/* Image attachment */}
+            {imagePreview ? (
+              <div className="relative w-fit">
+                <img
+                  src={imagePreview}
+                  alt=""
+                  className="max-h-40 rounded-lg object-cover"
+                />
+                {uploading && (
+                  <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50">
+                    <Loader2 className="h-5 w-5 animate-spin text-white" />
+                  </div>
+                )}
+                {!uploading && (
+                  <button
+                    type="button"
+                    onClick={clearImage}
+                    className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-white shadow"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Camera className="h-4 w-4" />
+                Add photo
+              </button>
+            )}
+
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageFile}
+            />
+
+            {uploadError && (
+              <p className="text-xs text-destructive">{uploadError}</p>
+            )}
             {error && (
               <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 {error}
@@ -67,22 +158,14 @@ export default function QuestionCard({
                 {text.length}/1000
               </span>
               <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setOpen(false);
-                    setText("");
-                    setError(null);
-                  }}
-                >
+                <Button variant="ghost" size="sm" onClick={handleClose}>
                   <X className="h-4 w-4" />
                   Cancel
                 </Button>
                 <Button
                   size="sm"
                   onClick={handleAnswer}
-                  disabled={!text.trim() || isAnswering}
+                  disabled={!text.trim() || isAnswering || uploading}
                 >
                   <Send className="h-4 w-4" />
                   {isAnswering ? "Posting…" : "Post answer"}

@@ -54,10 +54,10 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
 
     await pool.query('BEGIN');
     const aResult = await pool.query(
-      `INSERT INTO answers (question_id, author_id, content)
-       VALUES ($1, $2, $3)
-       RETURNING id, question_id, author_id, content, created_at`,
-      [data.question_id, req.user!.id, data.content]
+      `INSERT INTO answers (question_id, author_id, content, image_url)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, question_id, author_id, content, image_url, created_at`,
+      [data.question_id, req.user!.id, data.content, data.image_url ?? null]
     );
     await pool.query(`UPDATE questions SET is_answered = TRUE WHERE id = $1`, [data.question_id]);
     await pool.query('COMMIT');
@@ -132,6 +132,7 @@ router.get('/:username', async (req: Request, res: Response, next: NextFunction)
          q.created_at    AS asked_at,
          a.id            AS answer_id,
          a.content       AS answer,
+         a.image_url     AS answer_image_url,
          a.created_at    AS answered_at,
          COUNT(DISTINCT l.user_id)::int   AS likes,
          BOOL_OR(l.user_id = $3)          AS liked_by_me,
@@ -142,7 +143,7 @@ router.get('/:username', async (req: Request, res: Response, next: NextFunction)
        LEFT JOIN comments c ON c.answer_id = a.id AND c.is_deleted = FALSE
        WHERE q.recipient_id = $1
        GROUP BY q.id, q.content, q.sender_name, q.created_at,
-                a.id, a.content, a.created_at
+                a.id, a.content, a.image_url, a.created_at
        ORDER BY a.created_at DESC
        LIMIT $2 OFFSET $4`,
       [userId, limit, viewerId, offset]

@@ -1,5 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getComments, postComment, deleteComment } from "@/api/comments.api";
+import {
+  getComments,
+  postComment,
+  deleteComment,
+  likeComment,
+} from "@/api/comments.api";
 
 export function useComments(answerId: string) {
   return useQuery({
@@ -27,6 +32,16 @@ export function useDeleteComment(answerId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: deleteComment,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["comments", answerId] });
+    },
+  });
+}
+
+export function useLikeComment(answerId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: likeComment,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["comments", answerId] });
     },

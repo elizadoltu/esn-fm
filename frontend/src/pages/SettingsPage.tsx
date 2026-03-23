@@ -21,6 +21,19 @@ import {
 } from "@/hooks/useBrowserNotifications";
 import ImageUpload from "@/components/ImageUpload";
 
+function notifStatusText(
+  permission: NotificationPermission | "unsupported",
+  enabled: boolean
+): string {
+  if (permission === "denied")
+    return "Notifications are blocked. To enable, go to browser settings → Site settings → Notifications and allow this site.";
+  if (permission === "unsupported")
+    return "Your browser does not support notifications.";
+  if (!enabled && permission === "granted")
+    return "Notifications are paused. To fully disable them, go to browser settings → Site settings → Notifications.";
+  return "Get notified instantly when you receive questions, answers, or messages.";
+}
+
 export default function SettingsPage() {
   const { login: saveLogin, token, logout } = useAuth();
   const navigate = useNavigate();
@@ -132,6 +145,9 @@ export default function SettingsPage() {
   function handleDisableNotif() {
     disableNotifications().catch(() => {});
     setNotifEnabled(false);
+    setNotifPermission(
+      "Notification" in globalThis ? Notification.permission : "unsupported"
+    );
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -337,11 +353,7 @@ export default function SettingsPage() {
                   Browser notifications
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  {notifPermission === "denied"
-                    ? "Notifications are blocked in your browser settings. Please allow them manually."
-                    : notifPermission === "unsupported"
-                      ? "Your browser does not support notifications."
-                      : "Get notified instantly when you receive questions, answers, or messages."}
+                  {notifStatusText(notifPermission, notifEnabled)}
                 </p>
               </div>
             </div>

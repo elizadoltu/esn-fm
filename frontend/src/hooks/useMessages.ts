@@ -12,7 +12,6 @@ export function useConversations() {
   return useQuery({
     queryKey: ["conversations"],
     queryFn: getConversations,
-    refetchInterval: 5_000,
   });
 }
 
@@ -21,7 +20,6 @@ export function useMessages(username: string) {
     queryKey: ["messages", username],
     queryFn: () => getMessages(username),
     enabled: !!username,
-    refetchInterval: 5_000,
   });
 }
 
@@ -42,7 +40,7 @@ export function useUnreadDmCount() {
     queryKey: ["dm", "unread-count"],
     queryFn: getUnreadDmCount,
     enabled,
-    refetchInterval: enabled ? 5_000 : false,
+    refetchInterval: enabled ? 30_000 : false,
   });
 }
 

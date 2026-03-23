@@ -6,7 +6,15 @@ import { AuthProvider } from "@/context/AuthContext";
 import "./index.css";
 import App from "./App.tsx";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000, // data stays fresh for 1 min — no refetch on navigation
+      refetchOnWindowFocus: false, // don't blast the API every time you click the tab
+      retry: 1, // only retry once on failure instead of 3 times
+    },
+  },
+});
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

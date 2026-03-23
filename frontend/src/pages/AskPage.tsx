@@ -24,6 +24,8 @@ export default function AskPage() {
 
   const { data: profile } = useProfile(username ?? "");
 
+  const isSelf = isAuthenticated && me?.username === username;
+
   const [content, setContent] = useState("");
   const [senderName, setSenderName] = useState("");
   const [anonymous, setAnonymous] = useState(!isAuthenticated);
@@ -41,7 +43,7 @@ export default function AskPage() {
       await sendQuestion({
         recipient_username: username,
         content,
-        sender_name: anonymous ? undefined : senderName || me?.display_name,
+        sender_name: (isSelf || anonymous) ? undefined : senderName || me?.display_name,
         show_in_feed: showInFeed,
       });
       setSubmitted(true);
@@ -94,34 +96,35 @@ export default function AskPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                id="anonymous"
-                type="checkbox"
-                checked={anonymous}
-                onChange={(e) => {
-                  setAnonymous(e.target.checked);
-                  if (e.target.checked) setShowInFeed(false);
-                }}
-                className="h-4 w-4 rounded border-input accent-primary"
-              />
-              <Label htmlFor="anonymous" className="cursor-pointer font-normal">
-                Send anonymously
-              </Label>
-            </div>
+            {!isSelf && (
+              <>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="anonymous"
+                    type="checkbox"
+                    checked={anonymous}
+                    onChange={(e) => setAnonymous(e.target.checked)}
+                    className="h-4 w-4 rounded border-input accent-primary"
+                  />
+                  <Label htmlFor="anonymous" className="cursor-pointer font-normal">
+                    Send anonymously
+                  </Label>
+                </div>
 
-            {!anonymous && (
-              <div className="space-y-1.5">
-                <Label htmlFor="senderName">Your name (optional)</Label>
-                <Input
-                  id="senderName"
-                  type="text"
-                  placeholder={me?.display_name ?? "Your name"}
-                  value={senderName}
-                  onChange={(e) => setSenderName(e.target.value)}
-                  maxLength={60}
-                />
-              </div>
+                {!anonymous && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="senderName">Your name (optional)</Label>
+                    <Input
+                      id="senderName"
+                      type="text"
+                      placeholder={me?.display_name ?? "Your name"}
+                      value={senderName}
+                      onChange={(e) => setSenderName(e.target.value)}
+                      maxLength={60}
+                    />
+                  </div>
+                )}
+              </>
             )}
 
             <div className="flex items-center gap-2">
@@ -130,21 +133,15 @@ export default function AskPage() {
                 type="checkbox"
                 checked={showInFeed}
                 onChange={(e) => setShowInFeed(e.target.checked)}
-                disabled={anonymous}
-                className="h-4 w-4 rounded border-input accent-primary disabled:opacity-50"
+                className="h-4 w-4 rounded border-input accent-primary"
               />
               <Label
                 htmlFor="showInFeed"
-                className={`cursor-pointer font-normal ${anonymous ? "opacity-50" : ""}`}
+                className="cursor-pointer font-normal"
               >
                 Show this question on the public feed
               </Label>
             </div>
-            {anonymous && (
-              <p className="text-xs text-muted-foreground -mt-2">
-                Anonymous questions are hidden from public feeds.
-              </p>
-            )}
 
             {error && (
               <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">

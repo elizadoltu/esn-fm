@@ -56,7 +56,7 @@ function notificationText(n: Notification): string {
     case "new_follower":
       return `${name} started following you`;
     case "new_question":
-      return `${name} asked you a question`;
+      return "Someone sent you a question";
     case "new_answer":
       return `${name} answered your question`;
     case "new_dm":

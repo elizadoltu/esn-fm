@@ -2,7 +2,7 @@ import client from "./client";
 
 export async function uploadImage(
   file: File,
-  type: "avatar" | "cover"
+  type: "avatar" | "cover" | "answer"
 ): Promise<string> {
   const form = new FormData();
   form.append("file", file);

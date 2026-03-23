@@ -66,8 +66,8 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       return;
     }
 
-    // show_in_feed defaults to TRUE for logged-in, FALSE for anonymous
-    const showInFeed = data.show_in_feed ?? senderId !== null;
+    // Anonymous questions always appear in the feed; logged-in senders can opt out
+    const showInFeed = data.show_in_feed ?? true;
 
     const result = await pool.query(
       `INSERT INTO questions (recipient_id, sender_id, sender_name, content, show_in_feed)
@@ -76,8 +76,8 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       [recipient.id, senderId, data.sender_name ?? null, data.content, showInFeed]
     );
 
-    // Notify recipient of new question
-    await createNotification(recipient.id, 'new_question', result.rows[0].id, senderId);
+    // Never expose who asked — always use null actor so the sender stays anonymous
+    await createNotification(recipient.id, 'new_question', result.rows[0].id, null);
 
     res.status(201).json(result.rows[0]);
   } catch (err) {

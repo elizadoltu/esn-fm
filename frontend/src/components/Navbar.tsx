@@ -148,7 +148,13 @@ export default function Navbar() {
 
           {/* Mobile right side */}
           <div className="flex items-center gap-2 md:hidden">
-            {isAuthenticated && unreadCount > 0 && (
+            {isAuthenticated && (
+              <Link to="/messages" className="relative p-1">
+                <Mail className="h-5 w-5 text-muted-foreground" />
+                <NotificationBadge count={unreadDmCount} />
+              </Link>
+            )}
+            {isAuthenticated && (
               <Link to="/notifications" className="relative p-1">
                 <Bell className="h-5 w-5 text-muted-foreground" />
                 <NotificationBadge count={unreadCount} />
