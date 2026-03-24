@@ -17,10 +17,18 @@ import SettingsPage from "@/pages/SettingsPage";
 import AdminPage from "@/pages/AdminPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import OnboardingPage, { hasCompletedOnboarding } from "@/pages/OnboardingPage";
 
 function RequireAuth({ children }: Readonly<{ children: React.ReactNode }>) {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+}
+
+function RequireOnboarding({ children }: Readonly<{ children: React.ReactNode }>) {
+  const { isAuthenticated, user } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user && hasCompletedOnboarding(user.id)) return <Navigate to="/home" replace />;
+  return <>{children}</>;
 }
 
 function RequireAdmin({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -107,6 +115,16 @@ export default function App() {
             <RequireAdmin>
               <AdminPage />
             </RequireAdmin>
+          }
+        />
+
+        {/* Onboarding */}
+        <Route
+          path="/onboarding"
+          element={
+            <RequireOnboarding>
+              <OnboardingPage />
+            </RequireOnboarding>
           }
         />
 

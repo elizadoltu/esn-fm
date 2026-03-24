@@ -46,6 +46,16 @@ export async function deleteAnswer(id: string): Promise<void> {
   await client.delete(`/api/answers/${id}`);
 }
 
+export async function archiveAnswer(id: string): Promise<{ id: string; is_archived: boolean }> {
+  const res = await client.patch<{ id: string; is_archived: boolean }>(`/api/answers/${id}/archive`);
+  return res.data;
+}
+
+export async function getArchivedAnswers(): Promise<FeedItem[]> {
+  const res = await client.get<FeedItem[]>("/api/answers/me/archived");
+  return res.data;
+}
+
 export async function toggleLike(
   answerId: string
 ): Promise<{ liked: boolean }> {

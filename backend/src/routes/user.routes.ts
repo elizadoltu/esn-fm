@@ -64,6 +64,53 @@ router.get('/me', verifyJWT, async (req: Request, res: Response, next: NextFunct
  *       404:
  *         description: User not found
  */
+router.get('/', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.id;
+    const result = await pool.query(
+      `SELECT id, username, display_name, bio, avatar_url, is_private,
+              (SELECT COUNT(*)::int FROM follows WHERE following_id = u.id AND status = 'accepted') AS follower_count
+       FROM users u
+       WHERE id != $1
+       ORDER BY follower_count DESC, created_at ASC
+       LIMIT 100`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/suggestions', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.id;
+
+    const result = await pool.query(
+      `SELECT
+         u.id, u.username, u.display_name, u.avatar_url, u.is_private,
+         COUNT(DISTINCT my_f.following_id)::int AS mutual_followers
+       FROM users u
+       JOIN follows their_f ON their_f.follower_id = u.id AND their_f.status = 'accepted'
+       JOIN follows my_f ON my_f.follower_id = $1
+         AND my_f.following_id = their_f.following_id
+         AND my_f.status = 'accepted'
+       WHERE u.id != $1
+         AND NOT EXISTS (
+           SELECT 1 FROM follows WHERE follower_id = $1 AND following_id = u.id
+         )
+       GROUP BY u.id, u.username, u.display_name, u.avatar_url, u.is_private
+       ORDER BY mutual_followers DESC
+       LIMIT 10`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/:username', async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Optionally identify viewer from JWT for is_following

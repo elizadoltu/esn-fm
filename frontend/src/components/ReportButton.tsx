@@ -3,6 +3,7 @@ import { Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitReport } from "@/api/reports.api";
 import type { ContentType, ReportReason } from "@/api/reports.api";
+import { toast } from "sonner";
 
 const REASONS: { value: ReportReason; label: string }[] = [
   { value: "spam", label: "Spam" },
@@ -37,6 +38,7 @@ export default function ReportButton({
         reason,
       });
       setReported(true);
+      toast.success("Report submitted. We'll review it shortly.");
     } catch {
       // silently ignore duplicate reports (backend uses ON CONFLICT DO NOTHING)
     } finally {
@@ -99,6 +101,15 @@ export default function ReportButton({
                 {r.label}
               </button>
             ))}
+            <div className="mt-1 border-t border-border pt-1">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="flex w-full items-center rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent transition-colors text-left"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </>
       )}

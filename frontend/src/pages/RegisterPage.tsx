@@ -39,7 +39,7 @@ export default function RegisterPage() {
     try {
       const res = await register(form);
       saveLogin(res.token, res.user);
-      navigate(`/${res.user.username}`);
+      navigate("/onboarding");
     } catch (err: unknown) {
       setError(extractApiError(err, "Registration failed. Please try again."));
     } finally {

@@ -1,9 +1,10 @@
-import { useInbox, useDeleteQuestion, usePostAnswer } from "@/hooks/useInbox";
+import { useInbox, useDeleteQuestion, useArchiveQuestion, usePostAnswer } from "@/hooks/useInbox";
 import QuestionCard from "@/components/QuestionCard";
 
 export default function InboxPage() {
   const { data: questions, isLoading } = useInbox();
   const deleteQ = useDeleteQuestion();
+  const archiveQ = useArchiveQuestion();
   const answer = usePostAnswer();
 
   if (isLoading) {
@@ -41,8 +42,10 @@ export default function InboxPage() {
               });
             }}
             onDelete={(id) => deleteQ.mutate(id)}
+            onArchive={(id) => archiveQ.mutate(id)}
             isAnswering={answer.isPending}
             isDeleting={deleteQ.isPending}
+            isArchiving={archiveQ.isPending}
           />
         ))}
       </div>

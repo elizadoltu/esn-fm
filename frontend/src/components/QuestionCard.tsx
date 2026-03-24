@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Trash2, MessageCircle, X, Send, Camera, Loader2 } from "lucide-react";
+import { Trash2, MessageCircle, X, Send, Camera, Loader2, Archive } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,18 +17,24 @@ interface QuestionCardProps {
     imageUrl?: string
   ) => Promise<void>;
   onDelete: (questionId: string) => void;
+  onArchive: (questionId: string) => void;
   isAnswering?: boolean;
   isDeleting?: boolean;
+  isArchiving?: boolean;
 }
 
 export default function QuestionCard({
   question,
   onAnswer,
   onDelete,
+  onArchive,
   isAnswering = false,
   isDeleting = false,
+  isArchiving = false,
 }: Readonly<QuestionCardProps>) {
   const [open, setOpen] = useState(false);
+  const [confirmArchive, setConfirmArchive] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [text, setText] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -68,6 +75,101 @@ export default function QuestionCard({
     clearImage();
     setError(null);
     setUploadError(null);
+  }
+
+  function renderActions() {
+    if (open) return null;
+    if (confirmArchive) {
+      return (
+        <div className="mt-4 space-y-1.5">
+          <p className="text-xs font-medium">Archive this question?</p>
+          <p className="text-xs text-muted-foreground">
+            Archived questions are automatically deleted after 30 days.
+          </p>
+          <div className="flex gap-2 pt-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleArchiveConfirm}
+              disabled={isArchiving}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <Archive className="h-4 w-4" />
+              {isArchiving ? "Archiving…" : "Yes, archive"}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setConfirmArchive(false)}>
+              <X className="h-4 w-4" />
+              Cancel
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    if (confirmDelete) {
+      return (
+        <div className="mt-4 space-y-1.5">
+          <p className="text-xs font-medium">Delete this question?</p>
+          <p className="text-xs text-muted-foreground">
+            This action cannot be undone.
+          </p>
+          <div className="flex gap-2 pt-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+              {isDeleting ? "Deleting…" : "Yes, delete"}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(false)}>
+              <X className="h-4 w-4" />
+              Cancel
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="mt-4 flex gap-2 flex-wrap">
+        <Button size="sm" onClick={() => setOpen(true)}>
+          <MessageCircle className="h-4 w-4" />
+          Answer
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setConfirmArchive(true)}
+          disabled={isArchiving}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <Archive className="h-4 w-4" />
+          Archive
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setConfirmDelete(true)}
+          disabled={isDeleting}
+          className="text-destructive hover:text-destructive"
+        >
+          <Trash2 className="h-4 w-4" />
+          Delete
+        </Button>
+      </div>
+    );
+  }
+
+  function handleArchiveConfirm() {
+    onArchive(question.id);
+    setConfirmArchive(false);
+  }
+
+  function handleDeleteConfirm() {
+    onDelete(question.id);
+    toast.success("Question deleted");
+    setConfirmDelete(false);
   }
 
   async function handleAnswer() {
@@ -174,22 +276,7 @@ export default function QuestionCard({
             </div>
           </div>
         ) : (
-          <div className="mt-4 flex gap-2">
-            <Button size="sm" onClick={() => setOpen(true)}>
-              <MessageCircle className="h-4 w-4" />
-              Answer
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(question.id)}
-              disabled={isDeleting}
-              className="text-destructive hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete
-            </Button>
-          </div>
+          renderActions()
         )}
       </CardContent>
     </Card>
