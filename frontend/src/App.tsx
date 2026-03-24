@@ -25,10 +25,13 @@ function RequireAuth({ children }: Readonly<{ children: React.ReactNode }>) {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
-function RequireOnboarding({ children }: Readonly<{ children: React.ReactNode }>) {
+function RequireOnboarding({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   const { isAuthenticated, user } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (user && hasCompletedOnboarding(user.id)) return <Navigate to="/home" replace />;
+  if (user && hasCompletedOnboarding(user.id))
+    return <Navigate to="/home" replace />;
   return <>{children}</>;
 }
 

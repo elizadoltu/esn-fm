@@ -10,7 +10,6 @@ import FeedCard from "@/components/FeedCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-
 export default function ExplorePage() {
   const [q, setQ] = useState("");
   const { isAuthenticated } = useAuth();
@@ -162,7 +161,10 @@ export default function ExplorePage() {
                         : "opacity-100"
                     }`}
                   >
-                    <Link to={`/${user.username}`} className="flex flex-col items-center gap-2">
+                    <Link
+                      to={`/${user.username}`}
+                      className="flex flex-col items-center gap-2"
+                    >
                       {user.avatar_url ? (
                         <img
                           src={user.avatar_url}

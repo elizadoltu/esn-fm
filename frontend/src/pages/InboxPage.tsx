@@ -1,4 +1,9 @@
-import { useInbox, useDeleteQuestion, useArchiveQuestion, usePostAnswer } from "@/hooks/useInbox";
+import {
+  useInbox,
+  useDeleteQuestion,
+  useArchiveQuestion,
+  usePostAnswer,
+} from "@/hooks/useInbox";
 import QuestionCard from "@/components/QuestionCard";
 
 export default function InboxPage() {

@@ -103,7 +103,9 @@ export default function OnboardingPage() {
               size="sm"
               variant={followed.has(u.id) ? "outline" : "default"}
               disabled={pending.has(u.id)}
-              onClick={() => !followed.has(u.id) && handleFollow(u.username, u.id)}
+              onClick={() =>
+                !followed.has(u.id) && handleFollow(u.username, u.id)
+              }
             >
               {followed.has(u.id) ? "Following" : "Follow"}
             </Button>
@@ -113,7 +115,11 @@ export default function OnboardingPage() {
 
       {!isLoading && (
         <div className="mt-8 flex justify-center">
-          <Button size="lg" onClick={handleContinue} className="w-full max-w-xs">
+          <Button
+            size="lg"
+            onClick={handleContinue}
+            className="w-full max-w-xs"
+          >
             {followed.size > 0
               ? `Continue with ${followed.size} follow${followed.size > 1 ? "s" : ""}`
               : "Skip for now"}

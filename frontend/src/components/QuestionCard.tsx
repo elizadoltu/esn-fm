@@ -1,5 +1,13 @@
 import { useRef, useState } from "react";
-import { Trash2, MessageCircle, X, Send, Camera, Loader2, Archive } from "lucide-react";
+import {
+  Trash2,
+  MessageCircle,
+  X,
+  Send,
+  Camera,
+  Loader2,
+  Archive,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -97,7 +105,11 @@ export default function QuestionCard({
               <Archive className="h-4 w-4" />
               {isArchiving ? "Archiving…" : "Yes, archive"}
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setConfirmArchive(false)}>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setConfirmArchive(false)}
+            >
               <X className="h-4 w-4" />
               Cancel
             </Button>
@@ -123,7 +135,11 @@ export default function QuestionCard({
               <Trash2 className="h-4 w-4" />
               {isDeleting ? "Deleting…" : "Yes, delete"}
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(false)}>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setConfirmDelete(false)}
+            >
               <X className="h-4 w-4" />
               Cancel
             </Button>

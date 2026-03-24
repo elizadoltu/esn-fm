@@ -365,7 +365,8 @@ export default function FeedCard({
   const [showActions, setShowActions] = useState(false);
   const commentImageInputRef = useRef<HTMLInputElement>(null);
 
-  const isOwner = !!user && !!item.author_username && user.username === item.author_username;
+  const isOwner =
+    !!user && !!item.author_username && user.username === item.author_username;
 
   const { data: comments = [] } = useComments(
     showComments ? item.answer_id : ""

@@ -76,18 +76,21 @@ export default function HomePage() {
       )}
 
       {/* Friends empty state */}
-      {!isLoading && tab === "friends" && items.length === 0 && friendsOffset === 0 && (
-        <div className="py-16 text-center">
-          <Compass className="mx-auto mb-4 h-12 w-12 text-muted-foreground/40" />
-          <h2 className="mb-2 text-xl font-bold">No friends activity yet</h2>
-          <p className="mb-6 text-sm text-muted-foreground">
-            Follow people to see their Q&amp;As here.
-          </p>
-          <Button asChild>
-            <Link to="/explore">Discover people</Link>
-          </Button>
-        </div>
-      )}
+      {!isLoading &&
+        tab === "friends" &&
+        items.length === 0 &&
+        friendsOffset === 0 && (
+          <div className="py-16 text-center">
+            <Compass className="mx-auto mb-4 h-12 w-12 text-muted-foreground/40" />
+            <h2 className="mb-2 text-xl font-bold">No friends activity yet</h2>
+            <p className="mb-6 text-sm text-muted-foreground">
+              Follow people to see their Q&amp;As here.
+            </p>
+            <Button asChild>
+              <Link to="/explore">Discover people</Link>
+            </Button>
+          </div>
+        )}
 
       {/* Feed items */}
       {!isLoading && items.length > 0 && (

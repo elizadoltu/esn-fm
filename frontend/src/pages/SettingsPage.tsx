@@ -10,7 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Bell, Download, Smartphone, Archive, RotateCcw } from "lucide-react";
+import {
+  CheckCircle2,
+  Bell,
+  Download,
+  Smartphone,
+  Archive,
+  RotateCcw,
+} from "lucide-react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -61,9 +68,7 @@ function ArchiveSection() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {isLoading && (
-          <p className="text-sm text-muted-foreground">Loading…</p>
-        )}
+        {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
         {!isLoading && archived.length === 0 && (
           <p className="text-sm text-muted-foreground">
             No archived Q&amp;As yet.
