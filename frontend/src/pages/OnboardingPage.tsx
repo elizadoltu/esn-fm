@@ -6,6 +6,7 @@ import { useAuth } from "@/context/useAuth";
 import { followUser } from "@/api/follows.api";
 import { Button } from "@/components/ui/button";
 import client from "@/api/client";
+import { markOnboardingDone } from "@/lib/onboarding";
 
 interface OnboardingUser {
   id: string;
@@ -15,16 +16,6 @@ interface OnboardingUser {
   avatar_url: string | null;
   is_private: boolean;
   follower_count: number;
-}
-
-const ONBOARDING_KEY = "esn_fm_onboarding_done";
-
-export function hasCompletedOnboarding(userId: string): boolean {
-  return localStorage.getItem(`${ONBOARDING_KEY}_${userId}`) === "true";
-}
-
-export function markOnboardingDone(userId: string): void {
-  localStorage.setItem(`${ONBOARDING_KEY}_${userId}`, "true");
 }
 
 async function getAllUsers(): Promise<OnboardingUser[]> {

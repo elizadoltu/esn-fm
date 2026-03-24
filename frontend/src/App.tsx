@@ -17,7 +17,8 @@ import SettingsPage from "@/pages/SettingsPage";
 import AdminPage from "@/pages/AdminPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
-import OnboardingPage, { hasCompletedOnboarding } from "@/pages/OnboardingPage";
+import OnboardingPage from "@/pages/OnboardingPage";
+import { hasCompletedOnboarding } from "@/lib/onboarding";
 
 function RequireAuth({ children }: Readonly<{ children: React.ReactNode }>) {
   const { isAuthenticated } = useAuth();
