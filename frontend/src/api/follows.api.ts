@@ -46,3 +46,17 @@ export async function getFollowing(username: string): Promise<FollowUser[]> {
   );
   return res.data;
 }
+
+export interface SuggestionUser {
+  id: string;
+  username: string;
+  display_name: string;
+  avatar_url: string | null;
+  is_private: boolean;
+  mutual_followers: number;
+}
+
+export async function getSuggestions(): Promise<SuggestionUser[]> {
+  const res = await client.get<SuggestionUser[]>("/api/users/suggestions");
+  return res.data;
+}

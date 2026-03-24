@@ -104,7 +104,7 @@ router.get('/inbox', verifyJWT, async (req: Request, res: Response, next: NextFu
     const result = await pool.query(
       `SELECT id, sender_id, sender_name, content, is_answered, show_in_feed, created_at
        FROM questions
-       WHERE recipient_id = $1 AND is_answered = FALSE
+       WHERE recipient_id = $1 AND is_answered = FALSE AND is_archived = FALSE
        ORDER BY created_at DESC`,
       [req.user!.id]
     );
@@ -134,6 +134,26 @@ router.get('/inbox', verifyJWT, async (req: Request, res: Response, next: NextFu
  *       404:
  *         description: Not found or not yours
  */
+router.patch('/:id/archive', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await pool.query(
+      `UPDATE questions
+       SET is_archived = NOT is_archived,
+           archived_at = CASE WHEN is_archived = FALSE THEN NOW() ELSE NULL END
+       WHERE id = $1 AND recipient_id = $2
+       RETURNING id, is_archived, archived_at`,
+      [req.params.id, req.user!.id]
+    );
+    if (!result.rows[0]) {
+      res.status(404).json({ error: 'Question not found or not yours' });
+      return;
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.delete('/:id', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await pool.query(

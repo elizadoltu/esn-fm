@@ -3,6 +3,41 @@ import { pool } from '../db/pool.js';
 
 const router = Router();
 
+// 15-minute in-memory cache for trending — avoids recomputing on every page load
+const TRENDING_TTL_MS = 15 * 60 * 1000;
+let trendingCache: { rows: unknown[]; fetchedAt: number } | null = null;
+
+async function fetchTrending(): Promise<unknown[]> {
+  const result = await pool.query(
+    `SELECT
+       q.id AS question_id, q.content AS question,
+       a.id AS answer_id, a.content AS answer,
+       a.image_url AS answer_image_url, a.created_at AS answered_at,
+       COUNT(DISTINCT l.user_id)::int AS likes,
+       COUNT(DISTINCT c.id)::int      AS comment_count,
+       u.username AS author_username, u.display_name AS author_display_name,
+       u.avatar_url AS author_avatar_url
+     FROM answers a
+     JOIN questions q ON q.id = a.question_id
+     JOIN users u ON u.id = a.author_id
+     LEFT JOIN likes l ON l.answer_id = a.id
+     LEFT JOIN comments c ON c.answer_id = a.id AND c.is_deleted = FALSE
+     WHERE q.show_in_feed = TRUE
+       AND u.is_private = FALSE
+       AND a.is_archived = FALSE
+     GROUP BY q.id, q.content, a.id, a.content, a.image_url, a.created_at,
+              u.username, u.display_name, u.avatar_url
+     ORDER BY (
+       COUNT(DISTINCT l.user_id) * 2 +
+       COUNT(DISTINCT c.id) * 3 -
+       EXTRACT(EPOCH FROM (NOW() - a.created_at)) / 3600.0 * 0.5
+     ) DESC, a.created_at DESC
+     LIMIT 20`
+  );
+  trendingCache = { rows: result.rows, fetchedAt: Date.now() };
+  return result.rows;
+}
+
 /**
  * @openapi
  * /api/search:
@@ -66,6 +101,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
                WHERE (q.content ILIKE $1 OR a.content ILIKE $1)
                  AND q.show_in_feed = TRUE
                  AND u.is_private = FALSE
+                 AND a.is_archived = FALSE
                GROUP BY q.id, q.content, a.id, a.content, a.created_at,
                         u.username, u.display_name, u.avatar_url
                ORDER BY a.created_at DESC
@@ -90,29 +126,14 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  *       200:
  *         description: Trending feed items
  */
-router.get('/trending', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/trending', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await pool.query(
-      `SELECT
-         q.id AS question_id, q.content AS question,
-         a.id AS answer_id, a.content AS answer, a.created_at AS answered_at,
-         COUNT(l.user_id)::int AS likes,
-         u.username AS author_username, u.display_name AS author_display_name,
-         u.avatar_url AS author_avatar_url
-       FROM answers a
-       JOIN questions q ON q.id = a.question_id
-       JOIN users u ON u.id = a.author_id
-       LEFT JOIN likes l ON l.answer_id = a.id
-       WHERE q.show_in_feed = TRUE
-         AND u.is_private = FALSE
-         AND a.created_at > NOW() - INTERVAL '7 days'
-       GROUP BY q.id, q.content, a.id, a.content, a.created_at,
-                u.username, u.display_name, u.avatar_url
-       ORDER BY likes DESC, a.created_at DESC
-       LIMIT 20`
-    );
-
-    res.json(result.rows);
+    const now = Date.now();
+    if (trendingCache && now - trendingCache.fetchedAt < TRENDING_TTL_MS) {
+      res.json(trendingCache.rows);
+      return;
+    }
+    res.json(await fetchTrending());
   } catch (err) {
     next(err);
   }

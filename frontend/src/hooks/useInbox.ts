@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getInbox, deleteQuestion } from "@/api/questions.api";
+import { getInbox, deleteQuestion, archiveQuestion } from "@/api/questions.api";
 import { postAnswer } from "@/api/answers.api";
 
 export function useInbox() {
@@ -13,6 +13,14 @@ export function useDeleteQuestion() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: deleteQuestion,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["inbox"] }),
+  });
+}
+
+export function useArchiveQuestion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: archiveQuestion,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["inbox"] }),
   });
 }

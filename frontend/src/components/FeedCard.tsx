@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Heart,
   MessageCircle,
@@ -8,12 +8,15 @@ import {
   Trash2,
   ImagePlus,
   X,
+  MoreVertical,
+  Archive,
 } from "lucide-react";
 import { extractApiError } from "@/api/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { FeedItem } from "@/api/answers.api";
+import { archiveAnswer, deleteAnswer } from "@/api/answers.api";
 import {
   useComments,
   usePostComment,
@@ -25,6 +28,8 @@ import type { Comment } from "@/api/comments.api";
 import ReportButton from "@/components/ReportButton";
 import { uploadImage } from "@/api/upload.api";
 import { compressImage } from "@/lib/compressImage";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface FeedCardProps {
   item: FeedItem;
@@ -47,6 +52,43 @@ function CommentItem({
   const { user } = useAuth();
   const isOwn = user?.id === comment.author.id;
   const likeComment = useLikeComment(answerId);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  function handleDeleteConfirmed(id: string) {
+    onDelete(id);
+    toast.success("Comment deleted");
+    setConfirmDeleteId(null);
+  }
+
+  function renderDeleteControl(id: string, isOwner: boolean) {
+    if (!isOwner) return null;
+    if (confirmDeleteId === id) {
+      return (
+        <div className="flex items-center gap-1 ml-auto">
+          <button
+            className="text-xs text-destructive hover:underline"
+            onClick={() => handleDeleteConfirmed(id)}
+          >
+            Delete
+          </button>
+          <button
+            className="text-xs text-muted-foreground hover:underline"
+            onClick={() => setConfirmDeleteId(null)}
+          >
+            Cancel
+          </button>
+        </div>
+      );
+    }
+    return (
+      <button
+        className="text-xs text-muted-foreground hover:text-destructive transition-colors ml-auto"
+        onClick={() => setConfirmDeleteId(id)}
+      >
+        <Trash2 className="h-3 w-3" />
+      </button>
+    );
+  }
 
   return (
     <div className="space-y-2">
@@ -93,14 +135,7 @@ function CommentItem({
             >
               Reply
             </button>
-            {isOwn && (
-              <button
-                className="text-xs text-muted-foreground hover:text-destructive transition-colors ml-auto"
-                onClick={() => onDelete(comment.id)}
-              >
-                <Trash2 className="h-3 w-3" />
-              </button>
-            )}
+            {renderDeleteControl(comment.id, isOwn)}
           </div>
         )}
       </div>
@@ -154,14 +189,7 @@ function CommentItem({
                   >
                     Reply
                   </button>
-                  {user?.id === reply.author.id && (
-                    <button
-                      className="text-xs text-muted-foreground hover:text-destructive transition-colors ml-auto"
-                      onClick={() => onDelete(reply.id)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  )}
+                  {renderDeleteControl(reply.id, user?.id === reply.author.id)}
                 </div>
               )}
             </div>
@@ -172,12 +200,157 @@ function CommentItem({
   );
 }
 
+function ActionSheet({
+  answerId,
+  isOwner,
+  onClose,
+}: Readonly<{
+  answerId: string;
+  isOwner: boolean;
+  onClose: () => void;
+}>) {
+  const qc = useQueryClient();
+  const [confirmArchive, setConfirmArchive] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  function invalidateFeeds() {
+    qc.invalidateQueries({ queryKey: ["homeFeed"] });
+    qc.invalidateQueries({ queryKey: ["mainFeed"] });
+    qc.invalidateQueries({ queryKey: ["feed"] });
+    qc.invalidateQueries({ queryKey: ["archivedAnswers"] });
+  }
+
+  async function handleArchive() {
+    setBusy(true);
+    await archiveAnswer(answerId);
+    invalidateFeeds();
+    toast.success("Q&A archived");
+    onClose();
+  }
+
+  async function handleDelete() {
+    setBusy(true);
+    await deleteAnswer(answerId);
+    invalidateFeeds();
+    toast.success("Q&A deleted");
+    onClose();
+  }
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <>
+      {/* Backdrop */}
+      <button
+        type="button"
+        aria-label="Close menu"
+        className="fixed inset-0 z-40 bg-black/40"
+        onClick={onClose}
+      />
+
+      {/* Bottom sheet */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl border-t border-border bg-card pb-safe shadow-xl">
+        <div className="mx-auto my-2 h-1 w-10 rounded-full bg-muted" />
+
+        <div className="px-4 pb-6 pt-2 space-y-1">
+          {isOwner && !confirmArchive && !confirmDelete && (
+            <>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setConfirmArchive(true)}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium hover:bg-accent transition-colors"
+              >
+                <Archive className="h-4 w-4 text-muted-foreground" />
+                Archive
+              </button>
+
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setConfirmDelete(true)}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </button>
+            </>
+          )}
+
+          {isOwner && confirmArchive && (
+            <div className="space-y-2 py-2">
+              <p className="px-4 text-sm font-medium">Archive this Q&amp;A?</p>
+              <p className="px-4 text-xs text-muted-foreground">
+                Archived Q&amp;As are automatically deleted after 30 days.
+              </p>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={handleArchive}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium hover:bg-accent transition-colors"
+              >
+                <Archive className="h-4 w-4 text-muted-foreground" />
+                {busy ? "Archiving…" : "Yes, archive"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmArchive(false)}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium hover:bg-accent transition-colors"
+              >
+                <X className="h-4 w-4 text-muted-foreground" />
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {isOwner && confirmDelete && (
+            <div className="space-y-2 py-2">
+              <p className="px-4 text-sm font-medium">
+                Delete this Q&amp;A permanently?
+              </p>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={handleDelete}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+                {busy ? "Deleting…" : "Yes, delete"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium hover:bg-accent transition-colors"
+              >
+                <X className="h-4 w-4 text-muted-foreground" />
+                Cancel
+              </button>
+            </div>
+          )}
+
+          <div className="flex w-full items-center gap-3 rounded-lg px-4 py-1">
+            <ReportButton contentType="answer" contentId={answerId} />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function FeedCard({
   item,
   onLike,
   isAuthenticated,
   showAuthor = false,
 }: Readonly<FeedCardProps>) {
+  const { user } = useAuth();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [commentError, setCommentError] = useState<string | null>(null);
@@ -189,7 +362,11 @@ export default function FeedCard({
     null
   );
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [showActions, setShowActions] = useState(false);
   const commentImageInputRef = useRef<HTMLInputElement>(null);
+
+  const isOwner =
+    !!user && !!item.author_username && user.username === item.author_username;
 
   const { data: comments = [] } = useComments(
     showComments ? item.answer_id : ""
@@ -325,7 +502,14 @@ export default function FeedCard({
 
           {isAuthenticated && (
             <div className="ml-auto">
-              <ReportButton contentType="answer" contentId={item.answer_id} />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={() => setShowActions(true)}
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
             </div>
           )}
         </div>
@@ -435,6 +619,15 @@ export default function FeedCard({
           </div>
         )}
       </CardContent>
+
+      {/* Action sheet */}
+      {showActions && (
+        <ActionSheet
+          answerId={item.answer_id}
+          isOwner={isOwner}
+          onClose={() => setShowActions(false)}
+        />
+      )}
     </Card>
   );
 }

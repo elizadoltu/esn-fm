@@ -1,26 +1,47 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, UserCircle2, TrendingUp, Lock } from "lucide-react";
-import { useSearch, useTrending } from "@/hooks/useSearch";
+import { Search, UserCircle2, TrendingUp, Lock, Users } from "lucide-react";
+import { useSearch, useTrending, useSuggestions } from "@/hooks/useSearch";
 import { useAuth } from "@/context/useAuth";
 import { toggleLike } from "@/api/answers.api";
+import { followUser } from "@/api/follows.api";
 import { useQueryClient } from "@tanstack/react-query";
 import FeedCard from "@/components/FeedCard";
 import { Input } from "@/components/ui/input";
-import type { FeedItem } from "@/api/answers.api";
+import { Button } from "@/components/ui/button";
 
 export default function ExplorePage() {
   const [q, setQ] = useState("");
   const { isAuthenticated } = useAuth();
   const qc = useQueryClient();
 
+  const [removing, setRemoving] = useState<Set<string>>(new Set());
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+
   const { data: searchResults, isLoading: searchLoading } = useSearch(q);
   const { data: trending = [], isLoading: trendingLoading } = useTrending();
+  const { data: suggestions = [] } = useSuggestions();
+
+  const visibleSuggestions = suggestions.filter((s) => !dismissed.has(s.id));
 
   function handleLike(answerId: string) {
     toggleLike(answerId).then(() =>
       qc.invalidateQueries({ queryKey: ["trending"] })
     );
+  }
+
+  async function handleFollow(username: string, userId: string) {
+    setRemoving((prev) => new Set([...prev, userId]));
+    await followUser(username);
+    setTimeout(() => {
+      setDismissed((prev) => new Set([...prev, userId]));
+      setRemoving((prev) => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
+      qc.invalidateQueries({ queryKey: ["suggestions"] });
+    }, 300);
   }
 
   const isSearching = q.trim().length >= 1;
@@ -100,7 +121,7 @@ export default function ExplorePage() {
                 {searchResults!.answers.map((item) => (
                   <FeedCard
                     key={item.answer_id}
-                    item={item as FeedItem}
+                    item={item}
                     onLike={handleLike}
                     isAuthenticated={isAuthenticated}
                     showAuthor
@@ -120,35 +141,97 @@ export default function ExplorePage() {
         </div>
       )}
 
-      {/* Trending (when not searching) */}
+      {/* Default view (not searching) */}
       {!isSearching && (
-        <section>
-          <div className="mb-4 flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Trending this week</h2>
-          </div>
-          {trendingLoading && (
-            <p className="text-center text-sm text-muted-foreground">
-              Loading…
-            </p>
+        <div className="space-y-8">
+          {/* People You May Know */}
+          {visibleSuggestions.length > 0 && (
+            <section>
+              <div className="mb-4 flex items-center gap-2">
+                <Users className="h-5 w-5 text-muted-foreground" />
+                <h2 className="text-lg font-semibold">People You May Know</h2>
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {visibleSuggestions.map((user) => (
+                  <div
+                    key={user.id}
+                    className={`flex w-40 shrink-0 flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 transition-all duration-300 ${
+                      removing.has(user.id)
+                        ? "scale-95 opacity-0"
+                        : "opacity-100"
+                    }`}
+                  >
+                    <Link
+                      to={`/${user.username}`}
+                      className="flex flex-col items-center gap-2"
+                    >
+                      {user.avatar_url ? (
+                        <img
+                          src={user.avatar_url}
+                          alt={user.display_name}
+                          className="h-14 w-14 rounded-full object-cover"
+                        />
+                      ) : (
+                        <UserCircle2 className="h-14 w-14 text-muted-foreground/40" />
+                      )}
+                      <div className="text-center">
+                        <p className="max-w-full truncate text-sm font-medium">
+                          {user.display_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          @{user.username}
+                        </p>
+                      </div>
+                    </Link>
+                    <p className="text-xs text-muted-foreground">
+                      {user.mutual_followers} mutual{" "}
+                      {user.mutual_followers === 1 ? "follower" : "followers"}
+                    </p>
+                    {isAuthenticated && (
+                      <Button
+                        size="sm"
+                        className="w-full text-xs"
+                        disabled={removing.has(user.id)}
+                        onClick={() => handleFollow(user.username, user.id)}
+                      >
+                        Follow
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
           )}
-          <div className="space-y-4">
-            {trending.map((item) => (
-              <FeedCard
-                key={item.answer_id}
-                item={item as FeedItem}
-                onLike={handleLike}
-                isAuthenticated={isAuthenticated}
-                showAuthor
-              />
-            ))}
-            {!trendingLoading && trending.length === 0 && (
+
+          {/* Trending */}
+          <section>
+            <div className="mb-4 flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-lg font-semibold">Trending this week</h2>
+            </div>
+            {trendingLoading && (
               <p className="text-center text-sm text-muted-foreground">
-                Nothing trending yet. Be the first to ask!
+                Loading…
               </p>
             )}
-          </div>
-        </section>
+            <div className="space-y-4">
+              {trending.map((item) => (
+                <FeedCard
+                  key={item.answer_id}
+                  item={item}
+                  onLike={handleLike}
+                  isAuthenticated={isAuthenticated}
+                  showAuthor
+                />
+              ))}
+              {!trendingLoading && trending.length === 0 && (
+                <p className="text-center text-sm text-muted-foreground">
+                  Nothing trending yet. Be the first to ask!
+                </p>
+              )}
+            </div>
+          </section>
+        </div>
       )}
     </div>
   );

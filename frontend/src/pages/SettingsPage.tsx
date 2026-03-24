@@ -1,15 +1,23 @@
 import { useState, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/useAuth";
 import { updateProfile, getMe, deleteAccount } from "@/api/users.api";
+import { getArchivedAnswers, archiveAnswer } from "@/api/answers.api";
 import { extractApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Bell, Download, Smartphone } from "lucide-react";
+import {
+  CheckCircle2,
+  Bell,
+  Download,
+  Smartphone,
+  Archive,
+  RotateCcw,
+} from "lucide-react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -33,6 +41,64 @@ function notifStatusText(
   if (!enabled && permission === "granted")
     return "Notifications are paused. To fully disable them, go to browser settings → Site settings → Notifications.";
   return "Get notified instantly when you receive questions, answers, or messages.";
+}
+
+function ArchiveSection() {
+  const qc = useQueryClient();
+  const { data: archived = [], isLoading } = useQuery({
+    queryKey: ["archivedAnswers"],
+    queryFn: getArchivedAnswers,
+  });
+  const unarchive = useMutation({
+    mutationFn: archiveAnswer,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["archivedAnswers"] });
+      qc.invalidateQueries({ queryKey: ["feed"] });
+      qc.invalidateQueries({ queryKey: ["homeFeed"] });
+      qc.invalidateQueries({ queryKey: ["mainFeed"] });
+    },
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Archive className="h-4 w-4" />
+          Archived Q&amp;As
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+        {!isLoading && archived.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            No archived Q&amp;As yet.
+          </p>
+        )}
+        <div className="space-y-3">
+          {archived.map((item) => (
+            <div
+              key={item.answer_id}
+              className="rounded-lg border border-border p-3 space-y-1"
+            >
+              <p className="text-xs text-muted-foreground truncate">
+                {item.question}
+              </p>
+              <p className="text-sm truncate">{item.answer}</p>
+              <button
+                type="button"
+                disabled={unarchive.isPending}
+                onClick={() => unarchive.mutate(item.answer_id)}
+                className="flex items-center gap-1 text-xs text-primary hover:underline disabled:opacity-50"
+              >
+                <RotateCcw className="h-3 w-3" />
+                Restore
+              </button>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function SettingsPage() {
@@ -408,6 +474,8 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        <ArchiveSection />
 
         {/* Danger Zone */}
         <Card className="border-destructive/40">

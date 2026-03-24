@@ -97,6 +97,57 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
  *       404:
  *         description: User not found
  */
+router.get('/me/archived', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.id;
+    const result = await pool.query(
+      `SELECT
+         q.id            AS question_id,
+         q.content       AS question,
+         q.sender_name,
+         q.created_at    AS asked_at,
+         a.id            AS answer_id,
+         a.content       AS answer,
+         a.image_url     AS answer_image_url,
+         a.created_at    AS answered_at,
+         COUNT(DISTINCT l.user_id)::int AS likes,
+         COUNT(DISTINCT c.id)::int      AS comment_count
+       FROM answers a
+       JOIN questions q ON q.id = a.question_id
+       LEFT JOIN likes l ON l.answer_id = a.id
+       LEFT JOIN comments c ON c.answer_id = a.id AND c.is_deleted = FALSE
+       WHERE a.author_id = $1 AND a.is_archived = TRUE
+       GROUP BY q.id, q.content, q.sender_name, q.created_at,
+                a.id, a.content, a.image_url, a.created_at
+       ORDER BY a.created_at DESC`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch('/:id/archive', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await pool.query(
+      `UPDATE answers
+       SET is_archived = NOT is_archived,
+           archived_at = CASE WHEN is_archived = FALSE THEN NOW() ELSE NULL END
+       WHERE id = $1 AND author_id = $2
+       RETURNING id, is_archived, archived_at`,
+      [req.params.id, req.user!.id]
+    );
+    if (!result.rows[0]) {
+      res.status(404).json({ error: 'Answer not found or not yours' });
+      return;
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/:username', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 20, 50);
@@ -136,14 +187,20 @@ router.get('/:username', async (req: Request, res: Response, next: NextFunction)
          a.created_at    AS answered_at,
          COUNT(DISTINCT l.user_id)::int   AS likes,
          BOOL_OR(l.user_id = $3)          AS liked_by_me,
-         COUNT(DISTINCT c.id)::int        AS comment_count
+         COUNT(DISTINCT c.id)::int        AS comment_count,
+         u.username      AS author_username,
+         u.display_name  AS author_display_name,
+         u.avatar_url    AS author_avatar_url
        FROM questions q
        JOIN answers a ON a.question_id = q.id
+       JOIN users u ON u.id = a.author_id
        LEFT JOIN likes l ON l.answer_id = a.id
        LEFT JOIN comments c ON c.answer_id = a.id AND c.is_deleted = FALSE
        WHERE q.recipient_id = $1
+         AND a.is_archived = FALSE
        GROUP BY q.id, q.content, q.sender_name, q.created_at,
-                a.id, a.content, a.image_url, a.created_at
+                a.id, a.content, a.image_url, a.created_at,
+                u.username, u.display_name, u.avatar_url
        ORDER BY a.created_at DESC
        LIMIT $2 OFFSET $4`,
       [userId, limit, viewerId, offset]

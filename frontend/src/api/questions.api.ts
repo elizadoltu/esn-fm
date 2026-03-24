@@ -27,3 +27,12 @@ export async function getInbox(): Promise<Question[]> {
 export async function deleteQuestion(id: string): Promise<void> {
   await client.delete(`/api/questions/${id}`);
 }
+
+export async function archiveQuestion(
+  id: string
+): Promise<{ id: string; is_archived: boolean }> {
+  const res = await client.patch<{ id: string; is_archived: boolean }>(
+    `/api/questions/${id}/archive`
+  );
+  return res.data;
+}

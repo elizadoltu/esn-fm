@@ -21,6 +21,7 @@ import uploadRoutes from './routes/upload.routes.js';
 import eventsRouter from './routes/events.routes.js';
 import pushRouter from './routes/push.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { pool } from './db/pool.js';
 
 if (!process.env.JWT_SECRET) {
   throw new Error('[startup] JWT_SECRET environment variable is required');
@@ -84,3 +85,21 @@ app.listen(PORT, () => {
   console.log(`[server] running on http://localhost:${PORT}`);
   console.log(`[server] docs at http://localhost:${PORT}/docs`);
 });
+
+// Daily cleanup: permanently delete items archived more than 30 days ago
+const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
+async function runArchiveCleanup() {
+  try {
+    const answers = await pool.query(
+      `DELETE FROM answers WHERE is_archived = TRUE AND archived_at < NOW() - INTERVAL '30 days'`
+    );
+    const questions = await pool.query(
+      `DELETE FROM questions WHERE is_archived = TRUE AND archived_at < NOW() - INTERVAL '30 days'`
+    );
+    const total = (answers.rowCount ?? 0) + (questions.rowCount ?? 0);
+    if (total > 0) console.log(`[cleanup] deleted ${total} archived item(s) older than 30 days`);
+  } catch (err) {
+    console.error('[cleanup] archive cleanup failed:', err);
+  }
+}
+setInterval(runArchiveCleanup, CLEANUP_INTERVAL_MS);
