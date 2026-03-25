@@ -4,6 +4,8 @@ import { useAdminReports, useActionReport } from "@/hooks/useAdmin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ActionReportModal from "@/features/admin/ActionReportModal";
+import PaginationBar from "@/features/admin/PaginationBar";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { ActionReportTarget } from "@/types/admin";
 
 export default function ReportsTab() {
@@ -45,7 +47,21 @@ export default function ReportsTab() {
       </div>
 
       {isLoading && (
-        <p className="text-sm text-muted-foreground">Loading reports…</p>
+        <div className="space-y-3">
+          {[1, 2, 3].map((n) => (
+            <div
+              key={n}
+              className="rounded-lg border border-border bg-card p-4 space-y-2"
+            >
+              <div className="flex gap-2">
+                <Skeleton className="h-5 w-16 rounded" />
+                <Skeleton className="h-5 w-24 rounded" />
+              </div>
+              <Skeleton className="h-3.5 w-48 rounded" />
+              <Skeleton className="h-3.5 w-full rounded" />
+            </div>
+          ))}
+        </div>
       )}
       {error && (
         <p className="text-sm text-destructive">
@@ -127,26 +143,13 @@ export default function ReportsTab() {
         )}
       </div>
 
-      <div className="flex justify-end gap-2">
-        {reportOffset > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setReportOffset((o) => o - 20)}
-          >
-            Previous
-          </Button>
-        )}
-        {(reportsData?.reports.length ?? 0) === 20 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setReportOffset((o) => o + 20)}
-          >
-            Next
-          </Button>
-        )}
-      </div>
+      <PaginationBar
+        offset={reportOffset}
+        limit={20}
+        total={reportsData?.total ?? 0}
+        onPrev={() => setReportOffset((o) => o - 20)}
+        onNext={() => setReportOffset((o) => o + 20)}
+      />
 
       {actionTarget && (
         <ActionReportModal

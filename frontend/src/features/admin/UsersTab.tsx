@@ -4,6 +4,7 @@ import { useAdminUsers, useUpdateUserRole } from "@/hooks/useAdmin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import RoleBadge from "@/features/admin/RoleBadge";
+import { Skeleton } from "@/components/ui/skeleton";
 import DeleteUserModal from "@/features/admin/DeleteUserModal";
 import type { DeleteUserTarget } from "@/types/admin";
 import { useAuth } from "@/context/useAuth";
@@ -46,21 +47,65 @@ export default function UsersTab({ isAdmin }: Readonly<UsersTabProps>) {
       </div>
 
       {isLoading && (
-        <p className="text-sm text-muted-foreground">Loading users…</p>
+        <div className="overflow-x-auto rounded-xl border border-border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/30">
+                {["User", "Email", "Role", "Answers", "Joined", "Actions"].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                    >
+                      {h}
+                    </th>
+                  )
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <tr key={n} className="border-t border-border">
+                  <td className="px-4 py-3">
+                    <div className="space-y-1">
+                      <Skeleton className="h-3.5 w-28" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-3.5 w-36" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-3.5 w-6" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-3.5 w-20" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-7 w-20 rounded-md" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {error && (
         <p className="text-sm text-destructive">Failed to load users.</p>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-border">
+      <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-sm">
-          <thead className="bg-muted/40">
-            <tr>
+          <thead>
+            <tr className="border-b border-border bg-muted/30">
               {["User", "Email", "Role", "Answers", "Joined", "Actions"].map(
                 (h) => (
                   <th
                     key={h}
-                    className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground"
+                    className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                   >
                     {h}
                   </th>
@@ -137,9 +182,10 @@ export default function UsersTab({ isAdmin }: Readonly<UsersTabProps>) {
         </table>
       </div>
 
-      <div className="flex justify-between">
+      <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
-          {usersData?.total ?? 0} total users
+          Showing {usersData?.users.length ?? 0} of {usersData?.total ?? 0}{" "}
+          users
         </p>
         <div className="flex gap-2">
           {userOffset > 0 && (

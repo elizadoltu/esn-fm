@@ -20,6 +20,7 @@ import adminRoutes from './routes/admin.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import eventsRouter from './routes/events.routes.js';
 import pushRouter from './routes/push.routes.js';
+import dailyQuestionRoutes from './routes/daily-question.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { pool } from './db/pool.js';
 
@@ -77,6 +78,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/events', eventsRouter);
 app.use('/api/push', pushRouter);
+app.use('/api/daily-question', dailyQuestionRoutes);
 
 app.use(errorHandler);
 
@@ -103,3 +105,23 @@ async function runArchiveCleanup() {
   }
 }
 setInterval(runArchiveCleanup, CLEANUP_INTERVAL_MS);
+
+// Hourly check: auto-archive QOTD after 24 hours from publish
+async function runDailyQuestionExpiry() {
+  try {
+    const result = await pool.query(
+      `UPDATE daily_questions
+       SET is_active = FALSE
+       WHERE is_active = TRUE
+         AND published_at < NOW() - INTERVAL '24 hours'
+       RETURNING id`
+    );
+    if ((result.rowCount ?? 0) > 0) {
+      console.log(`[qotd] auto-archived ${result.rowCount} expired question(s)`);
+    }
+  } catch (err) {
+    console.error('[qotd] expiry check failed:', err);
+  }
+}
+setInterval(runDailyQuestionExpiry, 60 * 60 * 1000);
+runDailyQuestionExpiry();

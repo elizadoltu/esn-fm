@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuditLogs } from "@/hooks/useAdmin";
-import { Button } from "@/components/ui/button";
+import PaginationBar from "@/features/admin/PaginationBar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AuditLogTab() {
   const [auditOffset, setAuditOffset] = useState(0);
@@ -9,17 +10,56 @@ export default function AuditLogTab() {
   return (
     <div className="space-y-4">
       {isLoading && (
-        <p className="text-sm text-muted-foreground">Loading audit logs…</p>
+        <div className="overflow-x-auto rounded-xl border border-border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/30">
+                {["Admin", "Action", "Target", "Details", "Time"].map((h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <tr key={n} className="border-t border-border">
+                  <td className="px-4 py-3">
+                    <div className="space-y-1">
+                      <Skeleton className="h-3.5 w-24" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-5 w-28 rounded" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-3.5 w-16" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-3.5 w-40" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-3.5 w-28" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-border">
+      <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-sm">
-          <thead className="bg-muted/40">
-            <tr>
+          <thead>
+            <tr className="border-b border-border bg-muted/30">
               {["Admin", "Action", "Target", "Details", "Time"].map((h) => (
                 <th
                   key={h}
-                  className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground"
+                  className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                 >
                   {h}
                 </th>
@@ -72,26 +112,13 @@ export default function AuditLogTab() {
         </table>
       </div>
 
-      <div className="flex justify-end gap-2">
-        {auditOffset > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setAuditOffset((o) => o - 50)}
-          >
-            Previous
-          </Button>
-        )}
-        {(auditData?.logs.length ?? 0) === 50 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setAuditOffset((o) => o + 50)}
-          >
-            Next
-          </Button>
-        )}
-      </div>
+      <PaginationBar
+        offset={auditOffset}
+        limit={20}
+        total={auditData?.total ?? 0}
+        onPrev={() => setAuditOffset((o) => o - 20)}
+        onNext={() => setAuditOffset((o) => o + 20)}
+      />
     </div>
   );
 }

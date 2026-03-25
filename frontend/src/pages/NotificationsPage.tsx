@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Bell, CheckCheck, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/useAuth";
 import { useBrowserNotifTrigger } from "@/hooks/useBrowserNotifTrigger";
 import FollowRequestActions from "@/features/notifications/FollowRequestActions";
+import NotificationSkeleton from "@/components/NotificationSkeleton";
 import {
   notificationIcon,
   notificationText,
@@ -26,6 +28,14 @@ export default function NotificationsPage() {
   const deleteNotif = useDeleteNotification();
 
   const unread = notifications.filter((n) => !n.is_read).length;
+
+  // Auto-mark all as read when the page is opened and there are unread notifications
+  useEffect(() => {
+    if (unread > 0 && !isLoading) {
+      markAll.mutate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
 
   return (
     <div className="mx-auto max-w-xl px-4 py-8">
@@ -50,7 +60,11 @@ export default function NotificationsPage() {
       </div>
 
       {isLoading && (
-        <p className="py-12 text-center text-muted-foreground">Loading…</p>
+        <div className="space-y-1">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <NotificationSkeleton key={n} />
+          ))}
+        </div>
       )}
 
       {!isLoading && notifications.length === 0 && (

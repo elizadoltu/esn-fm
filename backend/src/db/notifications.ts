@@ -11,7 +11,8 @@ export type NotificationType =
   | 'new_answer'
   | 'new_dm'
   | 'follow_request'
-  | 'moderation_alert';
+  | 'moderation_alert'
+  | 'question_of_day';
 
 const pushBody: Record<NotificationType, string> = {
   new_question: 'You have a new question',
@@ -23,6 +24,7 @@ const pushBody: Record<NotificationType, string> = {
   new_dm: 'You have a new message',
   follow_request: 'Someone wants to follow you',
   moderation_alert: 'New report received — review required',
+  question_of_day: "Today's question is live — what's your answer?",
 };
 
 const pushUrl: Record<NotificationType, string> = {
@@ -35,6 +37,7 @@ const pushUrl: Record<NotificationType, string> = {
   new_dm: '/messages',
   follow_request: '/notifications',
   moderation_alert: '/admin/moderation',
+  question_of_day: '/home',
 };
 
 export async function createNotification(

@@ -18,6 +18,8 @@ import AdminPage from "@/pages/AdminPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import OnboardingPage from "@/pages/OnboardingPage";
+import DailyQArchivePage from "@/pages/DailyQArchivePage";
+import DailyQDetailPage from "@/pages/DailyQDetailPage";
 import { hasCompletedOnboarding } from "@/lib/onboarding";
 
 function RequireAuth({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -60,6 +62,8 @@ export default function App() {
         <Route path="/ask/:username" element={<AskPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/daily-q/archive" element={<DailyQArchivePage />} />
+        <Route path="/daily-q/:id" element={<DailyQDetailPage />} />
         <Route path="/:username" element={<ProfilePage />} />
 
         {/* Protected */}

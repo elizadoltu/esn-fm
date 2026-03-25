@@ -8,15 +8,20 @@ import {
   Mail,
   Lock,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import ReportButton from "@/components/ReportButton";
+import FeedCardSkeleton from "@/components/FeedCardSkeleton";
+import ProfileHeaderSkeleton from "@/components/ProfileHeaderSkeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { useProfile, useFeed, useLike } from "@/hooks/useProfile";
+import { useUserDailyQAnswers, useDailyQLike } from "@/hooks/useDailyQuestion";
 import { useFollowToggle } from "@/hooks/useFollow";
 import { useAuth } from "@/context/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import FeedCard from "@/components/FeedCard";
+import DailyQAnswerCard from "@/features/dailyQ/DailyQAnswerCard";
 import { uploadImage } from "@/api/upload.api";
 import { updateProfile } from "@/api/users.api";
 import AvatarCropModal from "@/features/profile/AvatarCropModal";
@@ -38,6 +43,8 @@ export default function ProfilePage() {
   );
   const like = useLike(username ?? "");
   const followToggle = useFollowToggle(username ?? "");
+  const { data: dailyQAnswers = [] } = useUserDailyQAnswers(username ?? "");
+  const dailyQLike = useDailyQLike();
   const [followModal, setFollowModal] = useState<ModalTab | null>(null);
   const [showAvatarViewer, setShowAvatarViewer] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
@@ -84,7 +91,12 @@ export default function ProfilePage() {
 
   if (profileLoading) {
     return (
-      <div className="py-16 text-center text-muted-foreground">Loading…</div>
+      <div className="mx-auto max-w-xl px-4 py-8 space-y-4">
+        <ProfileHeaderSkeleton />
+        {[1, 2, 3].map((n) => (
+          <FeedCardSkeleton key={n} />
+        ))}
+      </div>
     );
   }
 
@@ -326,8 +338,10 @@ export default function ProfilePage() {
 
         {canViewFeed &&
           (feedLoading ? (
-            <div className="py-8 text-center text-muted-foreground">
-              Loading feed…
+            <div className="space-y-4">
+              {[1, 2, 3].map((n) => (
+                <FeedCardSkeleton key={n} />
+              ))}
             </div>
           ) : (
             <div className="space-y-4">
@@ -347,6 +361,45 @@ export default function ProfilePage() {
             </div>
           ))}
       </div>
+
+      {/* Daily Q answers */}
+      {canViewFeed && dailyQAnswers.length > 0 && (
+        <div className="mt-8">
+          <div className="mb-4 flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <h2 className="text-base font-semibold">Daily Q answers</h2>
+          </div>
+          <div className="space-y-4">
+            {dailyQAnswers.map((a) => (
+              <div key={a.id}>
+                <Link
+                  to={`/daily-q/${a.daily_question_id}`}
+                  className="mb-2 block text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <Sparkles className="mr-1 inline h-3 w-3" />
+                  {a.question}
+                </Link>
+                <DailyQAnswerCard
+                  answer={{
+                    id: a.id,
+                    content: a.content,
+                    show_on_feed: a.show_on_feed,
+                    created_at: a.created_at,
+                    author_username: profile.username,
+                    author_display_name: profile.display_name,
+                    author_avatar_url: profile.avatar_url ?? "",
+                    likes: a.likes,
+                    liked_by_me: a.liked_by_me,
+                    comment_count: a.comment_count,
+                  }}
+                  onLike={(id) => dailyQLike.mutate(id)}
+                  isAuthenticated={isAuthenticated}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

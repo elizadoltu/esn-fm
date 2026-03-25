@@ -29,8 +29,9 @@ export default function ExplorePage() {
     onMutate: async (answerId) => {
       await qc.cancelQueries({ queryKey: ["trending"] });
       const prev = qc.getQueryData<FeedItem[]>(["trending"]);
-      qc.setQueryData<FeedItem[]>(["trending"], (old) =>
-        old?.map((item) =>
+      qc.setQueryData<FeedItem[]>(["trending"], (old) => {
+        if (!old) return old;
+        const updated = old.map((item) =>
           item.answer_id === answerId
             ? {
                 ...item,
@@ -38,8 +39,10 @@ export default function ExplorePage() {
                 likes: item.liked_by_me ? item.likes - 1 : item.likes + 1,
               }
             : item
-        )
-      );
+        );
+        // Re-sort by likes descending so liked items bubble up immediately
+        return [...updated].sort((a, b) => b.likes - a.likes);
+      });
       return { prev };
     },
     onError: (_err, _answerId, context) => {
@@ -161,6 +164,36 @@ export default function ExplorePage() {
       {/* Default view (not searching) */}
       {!isSearching && (
         <div className="space-y-8">
+          {/* Trending Now */}
+          <section>
+            <div className="mb-4 flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-lg font-semibold">Trending Now</h2>
+            </div>
+            {trendingLoading && (
+              <p className="text-center text-sm text-muted-foreground">
+                Loading…
+              </p>
+            )}
+            <div className="space-y-4">
+              {trending.map((item) => (
+                <FeedCard
+                  key={item.answer_id}
+                  item={item}
+                  onLike={handleLike}
+                  isAuthenticated={isAuthenticated}
+                  showAuthor
+                />
+              ))}
+              {!trendingLoading && trending.length === 0 && (
+                <p className="text-center text-sm text-muted-foreground">
+                  Nothing trending in the last 24 hours yet. Be the first to
+                  answer!
+                </p>
+              )}
+            </div>
+          </section>
+
           {/* People You May Know */}
           {visibleSuggestions.length > 0 && (
             <section>
@@ -219,35 +252,6 @@ export default function ExplorePage() {
               </div>
             </section>
           )}
-
-          {/* Trending */}
-          <section>
-            <div className="mb-4 flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Trending this week</h2>
-            </div>
-            {trendingLoading && (
-              <p className="text-center text-sm text-muted-foreground">
-                Loading…
-              </p>
-            )}
-            <div className="space-y-4">
-              {trending.map((item) => (
-                <FeedCard
-                  key={item.answer_id}
-                  item={item}
-                  onLike={handleLike}
-                  isAuthenticated={isAuthenticated}
-                  showAuthor
-                />
-              ))}
-              {!trendingLoading && trending.length === 0 && (
-                <p className="text-center text-sm text-muted-foreground">
-                  Nothing trending yet. Be the first to ask!
-                </p>
-              )}
-            </div>
-          </section>
         </div>
       )}
     </div>
