@@ -10,7 +10,8 @@ export type NotificationType =
   | 'new_follower'
   | 'new_answer'
   | 'new_dm'
-  | 'follow_request';
+  | 'follow_request'
+  | 'moderation_alert';
 
 const pushBody: Record<NotificationType, string> = {
   new_question: 'You have a new question',
@@ -21,6 +22,7 @@ const pushBody: Record<NotificationType, string> = {
   new_answer: 'Someone answered your question',
   new_dm: 'You have a new message',
   follow_request: 'Someone wants to follow you',
+  moderation_alert: 'New report received — review required',
 };
 
 const pushUrl: Record<NotificationType, string> = {
@@ -32,6 +34,7 @@ const pushUrl: Record<NotificationType, string> = {
   new_answer: '/notifications',
   new_dm: '/messages',
   follow_request: '/notifications',
+  moderation_alert: '/admin/moderation',
 };
 
 export async function createNotification(
@@ -56,4 +59,37 @@ export async function createNotification(
     body: pushBody[type],
     url: pushUrl[type],
   }).catch(() => {});
+}
+
+/**
+ * Notify all admin and moderator accounts of a new report.
+ * Creates an in-app moderation_alert notification for each and fires SSE + push.
+ */
+export async function createModerationAlerts(reportId: string): Promise<void> {
+  const admins = await pool.query(
+    `SELECT id FROM users WHERE role IN ('admin', 'moderator') AND (is_deleted = FALSE OR is_deleted IS NULL)`
+  );
+
+  await Promise.all(
+    admins.rows.map((a: { id: string }) =>
+      pool
+        .query(
+          `INSERT INTO notifications (recipient_id, type, reference_id, actor_id)
+           VALUES ($1, 'moderation_alert', $2, NULL)`,
+          [a.id, reportId]
+        )
+        .then(() => {
+          sendSSE(a.id, 'notification', {
+            type: 'moderation_alert',
+            referenceId: reportId,
+            actorId: null,
+          });
+          sendPushToUser(a.id, {
+            title: 'ESN FM — New Report',
+            body: pushBody.moderation_alert,
+            url: pushUrl.moderation_alert,
+          }).catch(() => {});
+        })
+    )
+  );
 }

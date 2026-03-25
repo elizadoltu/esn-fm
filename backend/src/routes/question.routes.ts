@@ -69,11 +69,13 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     // Anonymous questions always appear in the feed; logged-in senders can opt out
     const showInFeed = data.show_in_feed ?? true;
 
+    const isAnonymous = data.is_anonymous ?? !senderId;
+
     const result = await pool.query(
-      `INSERT INTO questions (recipient_id, sender_id, sender_name, content, show_in_feed)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, recipient_id, sender_id, sender_name, content, is_answered, show_in_feed, created_at`,
-      [recipient.id, senderId, data.sender_name ?? null, data.content, showInFeed]
+      `INSERT INTO questions (recipient_id, sender_id, sender_name, content, show_in_feed, is_anonymous)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, recipient_id, sender_id, sender_name, content, is_answered, show_in_feed, is_anonymous, created_at`,
+      [recipient.id, senderId, data.sender_name ?? null, data.content, showInFeed, isAnonymous]
     );
 
     // Never expose who asked — always use null actor so the sender stays anonymous

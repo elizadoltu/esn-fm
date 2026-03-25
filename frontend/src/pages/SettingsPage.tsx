@@ -29,6 +29,7 @@ import {
   disableNotifications,
 } from "@/hooks/useBrowserNotifications";
 import ImageUpload from "@/components/ImageUpload";
+import { toast } from "sonner";
 
 function notifStatusText(
   permission: NotificationPermission | "unsupported",
@@ -154,18 +155,22 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    getMe().then((profile) => {
-      setForm({
-        display_name: profile.display_name ?? "",
-        bio: profile.bio ?? "",
-        avatar_url: profile.avatar_url ?? "",
-        cover_image_url: profile.cover_image_url ?? "",
-        location: profile.location ?? "",
-        website: profile.website ?? "",
-        allow_anonymous_questions: profile.allow_anonymous_questions,
-        is_private: profile.is_private,
+    getMe()
+      .then((profile) => {
+        setForm({
+          display_name: profile.display_name ?? "",
+          bio: profile.bio ?? "",
+          avatar_url: profile.avatar_url ?? "",
+          cover_image_url: profile.cover_image_url ?? "",
+          location: profile.location ?? "",
+          website: profile.website ?? "",
+          allow_anonymous_questions: profile.allow_anonymous_questions,
+          is_private: profile.is_private,
+        });
+      })
+      .catch(() => {
+        setError("Failed to load profile. Please refresh the page.");
       });
-    });
   }, []);
 
   function handleChange(
@@ -216,6 +221,28 @@ export default function SettingsPage() {
     setNotifPermission(
       "Notification" in globalThis ? Notification.permission : "unsupported"
     );
+  }
+
+  async function savePhoto(
+    field: "avatar_url" | "cover_image_url",
+    url: string
+  ) {
+    setForm((p) => ({ ...p, [field]: url }));
+    if (!url) return;
+    try {
+      const updated = await updateProfile({ [field]: url });
+      if (token) {
+        saveLogin(token, {
+          ...updated,
+          email: updated.email ?? "",
+        } as Parameters<typeof saveLogin>[1]);
+      }
+      if (user?.username) {
+        qc.invalidateQueries({ queryKey: ["profile", user.username] });
+      }
+    } catch {
+      toast.error("Failed to save photo. Tap Save changes to keep it.");
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -269,9 +296,7 @@ export default function SettingsPage() {
               <ImageUpload
                 type="avatar"
                 currentUrl={form.avatar_url}
-                onUploaded={(url) =>
-                  setForm((p) => ({ ...p, avatar_url: url }))
-                }
+                onUploaded={(url) => savePhoto("avatar_url", url)}
               />
             </div>
 
@@ -280,9 +305,7 @@ export default function SettingsPage() {
               <ImageUpload
                 type="cover"
                 currentUrl={form.cover_image_url}
-                onUploaded={(url) =>
-                  setForm((p) => ({ ...p, cover_image_url: url }))
-                }
+                onUploaded={(url) => savePhoto("cover_image_url", url)}
               />
             </div>
           </CardContent>
@@ -517,15 +540,12 @@ export default function SettingsPage() {
         )}
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {saved ? (
+          {saved && (
             <span className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4" /> Saved
             </span>
-          ) : loading ? (
-            "Saving…"
-          ) : (
-            "Save changes"
           )}
+          {!saved && (loading ? "Saving…" : "Save changes")}
         </Button>
       </form>
     </div>

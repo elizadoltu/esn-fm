@@ -14,6 +14,7 @@ export async function sendQuestion(data: {
   content: string;
   sender_name?: string;
   show_in_feed?: boolean;
+  is_anonymous?: boolean;
 }): Promise<Question> {
   const res = await client.post<Question>("/api/questions", data);
   return res.data;

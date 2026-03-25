@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   UserCircle2,
@@ -6,280 +6,28 @@ import {
   Globe,
   Users,
   Mail,
-  X,
   Lock,
-  Send,
-  CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import ReportButton from "@/components/ReportButton";
-import { useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useProfile, useFeed, useLike } from "@/hooks/useProfile";
 import { useFollowToggle } from "@/hooks/useFollow";
-import { getFollowers, getFollowing, type FollowUser } from "@/api/follows.api";
 import { useAuth } from "@/context/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import FeedCard from "@/components/FeedCard";
-import { sendQuestion } from "@/api/questions.api";
-
-const MAX_CHARS = 300;
-
-function AskForm({
-  recipientUsername,
-  isSelf,
-  me,
-  isAuthenticated,
-}: Readonly<{
-  recipientUsername: string;
-  isSelf: boolean;
-  me: { display_name?: string } | null;
-  isAuthenticated: boolean;
-}>) {
-  const [content, setContent] = useState("");
-  const [senderName, setSenderName] = useState("");
-  const [anonymous, setAnonymous] = useState(!isAuthenticated);
-  const [showInFeed, setShowInFeed] = useState(isAuthenticated);
-  const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      await sendQuestion({
-        recipient_username: recipientUsername,
-        content,
-        sender_name:
-          isSelf || anonymous ? undefined : senderName || me?.display_name,
-        show_in_feed: showInFeed,
-      });
-      setSubmitted(true);
-      setContent("");
-      setSenderName("");
-    } catch {
-      setError("Failed to send question. Try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (submitted) {
-    return (
-      <Card>
-        <CardContent className="p-5 flex flex-col items-center gap-2 py-8">
-          <CheckCircle2 className="h-8 w-8 text-primary" />
-          <p className="font-semibold">Question sent!</p>
-          <button
-            className="text-sm text-muted-foreground hover:underline"
-            onClick={() => setSubmitted(false)}
-          >
-            Ask another
-          </button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardContent className="p-5">
-        <p className="text-sm font-medium mb-3">
-          {isSelf ? "Ask yourself something" : "Ask a question"}
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="What would you like to ask?"
-              maxLength={MAX_CHARS}
-              rows={3}
-              required
-              className="resize-none text-sm"
-            />
-            <p
-              className={`text-right text-xs mt-1 ${content.length >= MAX_CHARS ? "text-destructive" : "text-muted-foreground"}`}
-            >
-              {content.length}/{MAX_CHARS}
-            </p>
-          </div>
-
-          {!isSelf && (
-            <>
-              <div className="flex items-center gap-2">
-                <input
-                  id={`anon-${recipientUsername}`}
-                  type="checkbox"
-                  checked={anonymous}
-                  onChange={(e) => setAnonymous(e.target.checked)}
-                  className="h-4 w-4 rounded border-input accent-primary"
-                />
-                <Label
-                  htmlFor={`anon-${recipientUsername}`}
-                  className="cursor-pointer font-normal text-sm"
-                >
-                  Send anonymously
-                </Label>
-              </div>
-              {!anonymous && (
-                <Input
-                  type="text"
-                  placeholder={me?.display_name ?? "Your name (optional)"}
-                  value={senderName}
-                  onChange={(e) => setSenderName(e.target.value)}
-                  maxLength={60}
-                  className="text-sm"
-                />
-              )}
-            </>
-          )}
-
-          <div className="flex items-center gap-2">
-            <input
-              id={`feed-${recipientUsername}`}
-              type="checkbox"
-              checked={showInFeed}
-              onChange={(e) => setShowInFeed(e.target.checked)}
-              className="h-4 w-4 rounded border-input accent-primary"
-            />
-            <Label
-              htmlFor={`feed-${recipientUsername}`}
-              className="cursor-pointer font-normal text-sm"
-            >
-              Show on public feed
-            </Label>
-          </div>
-
-          {error && <p className="text-xs text-destructive">{error}</p>}
-
-          <Button
-            type="submit"
-            size="sm"
-            className="w-full"
-            disabled={loading || !content.trim()}
-          >
-            <Send className="h-4 w-4 mr-1" />
-            {loading ? "Sending…" : "Send question"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
-  );
-}
-
-type ModalTab = "followers" | "following";
-
-function FollowModal({
-  username,
-  tab,
-  onClose,
-  onTabChange,
-}: Readonly<{
-  username: string;
-  tab: ModalTab;
-  onClose: () => void;
-  onTabChange: (t: ModalTab) => void;
-}>) {
-  const { data: followers = [], isLoading: loadingFollowers } = useQuery({
-    queryKey: ["followers", username],
-    queryFn: () => getFollowers(username),
-  });
-  const { data: following = [], isLoading: loadingFollowing } = useQuery({
-    queryKey: ["following", username],
-    queryFn: () => getFollowing(username),
-  });
-
-  const list: FollowUser[] = tab === "followers" ? followers : following;
-  const isLoading = tab === "followers" ? loadingFollowers : loadingFollowing;
-
-  return (
-    <>
-      {/* Backdrop */}
-      <button
-        type="button"
-        aria-label="Close"
-        className="fixed inset-0 z-40 w-full bg-black/60"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-card shadow-xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <div className="flex gap-1">
-            {(["followers", "following"] as ModalTab[]).map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => onTabChange(t)}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium capitalize transition-colors ${
-                  tab === t
-                    ? "bg-primary/15 text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="rounded-md p-1 text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* List */}
-        <div className="max-h-80 overflow-y-auto p-2">
-          {isLoading && (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              Loading…
-            </p>
-          )}
-          {!isLoading && list.length === 0 && (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              No {tab} yet
-            </p>
-          )}
-          {list.map((u) => (
-            <Link
-              key={u.id}
-              to={`/${u.username}`}
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-accent transition-colors"
-            >
-              {u.avatar_url ? (
-                <img
-                  src={u.avatar_url}
-                  alt={u.display_name}
-                  className="h-9 w-9 rounded-full object-cover shrink-0"
-                />
-              ) : (
-                <UserCircle2 className="h-9 w-9 shrink-0 text-muted-foreground/40" />
-              )}
-              <div className="min-w-0">
-                <p className="font-medium truncate">{u.display_name}</p>
-                <p className="text-xs text-muted-foreground">@{u.username}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </>
-  );
-}
+import { uploadImage } from "@/api/upload.api";
+import { updateProfile } from "@/api/users.api";
+import AvatarCropModal from "@/features/profile/AvatarCropModal";
+import AvatarViewer from "@/features/profile/AvatarViewer";
+import AskForm from "@/features/profile/AskForm";
+import FollowModal, { type ModalTab } from "@/features/profile/FollowModal";
 
 export default function ProfilePage() {
   const { username } = useParams<{ username: string }>();
   const { user: me, isAuthenticated } = useAuth();
+  const qc = useQueryClient();
   const { data: profile, isLoading: profileLoading } = useProfile(
     username ?? ""
   );
@@ -287,6 +35,31 @@ export default function ProfilePage() {
   const like = useLike(username ?? "");
   const followToggle = useFollowToggle(username ?? "");
   const [followModal, setFollowModal] = useState<ModalTab | null>(null);
+  const [showAvatarViewer, setShowAvatarViewer] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  function handleAvatarFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCropSrc(url);
+    setShowAvatarViewer(false);
+    e.target.value = "";
+  }
+
+  async function handleCropSave(file: File) {
+    setUploadingAvatar(true);
+    setCropSrc(null);
+    try {
+      const url = await uploadImage(file, "avatar");
+      await updateProfile({ avatar_url: url });
+      qc.invalidateQueries({ queryKey: ["profile", username] });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
 
   if (profileLoading) {
     return (
@@ -301,6 +74,9 @@ export default function ProfilePage() {
   }
 
   const isOwner = me?.username === username;
+  const isAdminOrMod = me?.role === "admin" || me?.role === "moderator";
+  const canViewFeed =
+    !profile.is_private || isOwner || isAdminOrMod || profile.is_following;
   let followLabel = "Follow";
   if (profile.is_following) followLabel = "Unfollow";
   else if (profile.is_pending) followLabel = "Requested";
@@ -322,20 +98,33 @@ export default function ProfilePage() {
       <Card className={profile.cover_image_url ? "rounded-t-none" : ""}>
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
-            {profile.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt={profile.display_name}
-                className="h-16 w-16 rounded-full object-cover ring-2 ring-border"
-              />
-            ) : (
-              <UserCircle2 className="h-16 w-16 text-muted-foreground/40" />
-            )}
+            {/* Clickable avatar */}
+            <button
+              type="button"
+              className="relative shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              onClick={() => setShowAvatarViewer(true)}
+              aria-label="View profile photo"
+            >
+              {profile.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={profile.display_name}
+                  className="h-16 w-16 rounded-full object-cover ring-2 ring-border"
+                />
+              ) : (
+                <UserCircle2 className="h-16 w-16 text-muted-foreground/40" />
+              )}
+              {uploadingAvatar && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50">
+                  <Loader2 className="h-5 w-5 animate-spin text-white" />
+                </div>
+              )}
+            </button>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-bold">{profile.display_name}</h1>
-                {profile.role !== "user" && (
+                {profile.role !== "user" && (isOwner || isAdminOrMod) && (
                   <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary capitalize">
                     {profile.role}
                   </span>
@@ -366,7 +155,6 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              {/* Clickable counts */}
               <div className="mt-3 flex gap-4 text-sm">
                 <button
                   type="button"
@@ -449,6 +237,15 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
+      {/* Hidden file input for avatar upload */}
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleAvatarFileSelected}
+      />
+
       {/* Followers / Following modal */}
       {followModal && username && (
         <FollowModal
@@ -456,6 +253,29 @@ export default function ProfilePage() {
           tab={followModal}
           onClose={() => setFollowModal(null)}
           onTabChange={setFollowModal}
+        />
+      )}
+
+      {/* Avatar viewer */}
+      {showAvatarViewer && (
+        <AvatarViewer
+          avatarUrl={profile.avatar_url ?? null}
+          displayName={profile.display_name}
+          isOwner={isOwner}
+          onEdit={() => avatarInputRef.current?.click()}
+          onClose={() => setShowAvatarViewer(false)}
+        />
+      )}
+
+      {/* Avatar crop modal */}
+      {cropSrc && (
+        <AvatarCropModal
+          src={cropSrc}
+          onSave={handleCropSave}
+          onCancel={() => {
+            URL.revokeObjectURL(cropSrc);
+            setCropSrc(null);
+          }}
         />
       )}
 
@@ -471,7 +291,7 @@ export default function ProfilePage() {
 
       {/* Feed */}
       <div className="mt-6">
-        {profile.is_private && !isOwner && !profile.is_following ? (
+        {!canViewFeed && (
           <div className="py-16 flex flex-col items-center gap-3 text-muted-foreground">
             <Lock className="h-10 w-10 opacity-30" />
             <p className="font-medium text-foreground">
@@ -481,9 +301,9 @@ export default function ProfilePage() {
               Follow this account to see their answers.
             </p>
           </div>
-        ) : null}
+        )}
 
-        {(!profile.is_private || isOwner || profile.is_following) &&
+        {canViewFeed &&
           (feedLoading ? (
             <div className="py-8 text-center text-muted-foreground">
               Loading feed…

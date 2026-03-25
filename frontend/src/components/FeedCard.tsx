@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Heart,
   MessageCircle,
@@ -38,6 +39,8 @@ interface FeedCardProps {
   showAuthor?: boolean;
 }
 
+const REPLIES_VISIBLE = 2;
+
 function CommentItem({
   comment,
   answerId,
@@ -53,6 +56,11 @@ function CommentItem({
   const isOwn = user?.id === comment.author.id;
   const likeComment = useLikeComment(answerId);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [showAllReplies, setShowAllReplies] = useState(false);
+  const visibleReplies = showAllReplies
+    ? comment.replies
+    : comment.replies.slice(0, REPLIES_VISIBLE);
+  const hiddenReplies = comment.replies.length - REPLIES_VISIBLE;
 
   function handleDeleteConfirmed(id: string) {
     onDelete(id);
@@ -93,9 +101,18 @@ function CommentItem({
   return (
     <div className="space-y-2">
       <div className="rounded-lg bg-accent/60 px-3 py-2">
-        <p className="text-xs font-medium text-foreground/80 mb-0.5">
-          {comment.author.display_name ?? comment.author.username ?? "Deleted"}
-        </p>
+        {comment.author.username ? (
+          <Link
+            to={`/${comment.author.username}`}
+            className="text-xs font-medium text-foreground/80 mb-0.5 hover:underline block"
+          >
+            {comment.author.display_name ?? comment.author.username}
+          </Link>
+        ) : (
+          <p className="text-xs font-medium text-foreground/80 mb-0.5">
+            Deleted
+          </p>
+        )}
         {comment.content && (
           <p className="text-sm text-foreground">{comment.content}</p>
         )}
@@ -135,6 +152,9 @@ function CommentItem({
             >
               Reply
             </button>
+            {user && !isOwn && (
+              <ReportButton contentType="comment" contentId={comment.id} />
+            )}
             {renderDeleteControl(comment.id, isOwn)}
           </div>
         )}
@@ -143,13 +163,20 @@ function CommentItem({
       {/* Replies */}
       {comment.replies.length > 0 && (
         <div className="ml-6 space-y-2">
-          {comment.replies.map((reply) => (
+          {visibleReplies.map((reply) => (
             <div key={reply.id} className="rounded-lg bg-muted/50 px-3 py-2">
-              <p className="text-xs font-medium text-foreground/80 mb-0.5">
-                {reply.author.display_name ??
-                  reply.author.username ??
-                  "Deleted"}
-              </p>
+              {reply.author.username ? (
+                <Link
+                  to={`/${reply.author.username}`}
+                  className="text-xs font-medium text-foreground/80 mb-0.5 hover:underline block"
+                >
+                  {reply.author.display_name ?? reply.author.username}
+                </Link>
+              ) : (
+                <p className="text-xs font-medium text-foreground/80 mb-0.5">
+                  Deleted
+                </p>
+              )}
               {reply.content && (
                 <p className="text-sm text-foreground">{reply.content}</p>
               )}
@@ -189,11 +216,32 @@ function CommentItem({
                   >
                     Reply
                   </button>
+                  {user && user.id !== reply.author.id && (
+                    <ReportButton contentType="comment" contentId={reply.id} />
+                  )}
                   {renderDeleteControl(reply.id, user?.id === reply.author.id)}
                 </div>
               )}
             </div>
           ))}
+
+          {hiddenReplies > 0 && !showAllReplies && (
+            <button
+              className="text-xs text-primary hover:underline"
+              onClick={() => setShowAllReplies(true)}
+            >
+              Show {hiddenReplies} more{" "}
+              {hiddenReplies === 1 ? "reply" : "replies"}
+            </button>
+          )}
+          {showAllReplies && comment.replies.length > REPLIES_VISIBLE && (
+            <button
+              className="text-xs text-muted-foreground hover:underline"
+              onClick={() => setShowAllReplies(false)}
+            >
+              Show less
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -352,6 +400,7 @@ export default function FeedCard({
 }: Readonly<FeedCardProps>) {
   const { user } = useAuth();
   const [showComments, setShowComments] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [commentError, setCommentError] = useState<string | null>(null);
   const [replyTo, setReplyTo] = useState<{ id: string; name: string } | null>(
@@ -422,23 +471,25 @@ export default function FeedCard({
         {/* Author (home feed only) */}
         {showAuthor && item.author_username && (
           <div className="mb-3 flex items-center gap-2">
-            {item.author_avatar_url ? (
-              <img
-                src={item.author_avatar_url}
-                alt={item.author_display_name}
-                className="h-7 w-7 rounded-full object-cover"
-              />
-            ) : (
-              <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
-                {item.author_display_name?.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <a
-              href={`/${item.author_username}`}
+            <Link to={`/${item.author_username}`}>
+              {item.author_avatar_url ? (
+                <img
+                  src={item.author_avatar_url}
+                  alt={item.author_display_name}
+                  className="h-7 w-7 rounded-full object-cover"
+                />
+              ) : (
+                <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
+                  {item.author_display_name?.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </Link>
+            <Link
+              to={`/${item.author_username}`}
               className="text-sm font-medium hover:underline"
             >
               {item.author_display_name}
-            </a>
+            </Link>
             <span className="text-xs text-muted-foreground">
               @{item.author_username}
             </span>
@@ -523,18 +574,38 @@ export default function FeedCard({
               </p>
             )}
 
-            {comments.map((comment) => (
-              <CommentItem
-                key={comment.id}
-                comment={comment}
-                answerId={item.answer_id}
-                onDelete={(id) => deleteComment.mutate(id)}
-                onReply={(parentId, name) => {
-                  setReplyTo({ id: parentId, name });
-                  setCommentText(`@${name} `);
-                }}
-              />
-            ))}
+            {(showAllComments ? comments : comments.slice(0, 3)).map(
+              (comment) => (
+                <CommentItem
+                  key={comment.id}
+                  comment={comment}
+                  answerId={item.answer_id}
+                  onDelete={(id) => deleteComment.mutate(id)}
+                  onReply={(parentId, name) => {
+                    setReplyTo({ id: parentId, name });
+                    setCommentText(`@${name} `);
+                  }}
+                />
+              )
+            )}
+
+            {comments.length > 3 && !showAllComments && (
+              <button
+                className="text-xs text-primary hover:underline"
+                onClick={() => setShowAllComments(true)}
+              >
+                Show {comments.length - 3} more comment
+                {comments.length - 3 === 1 ? "" : "s"}
+              </button>
+            )}
+            {comments.length > 3 && showAllComments && (
+              <button
+                className="text-xs text-muted-foreground hover:underline"
+                onClick={() => setShowAllComments(false)}
+              >
+                Show less
+              </button>
+            )}
 
             {isAuthenticated && (
               <div className="space-y-2 pt-2">
