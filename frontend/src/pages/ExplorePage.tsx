@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { Search, UserCircle2, TrendingUp, Lock, Users } from "lucide-react";
 import { useSearch, useTrending, useSuggestions } from "@/hooks/useSearch";
 import { useAuth } from "@/context/useAuth";
-import { toggleLike } from "@/api/answers.api";
+import { toggleLike, type FeedItem } from "@/api/answers.api";
 import { followUser } from "@/api/follows.api";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import FeedCard from "@/components/FeedCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,11 +24,28 @@ export default function ExplorePage() {
 
   const visibleSuggestions = suggestions.filter((s) => !dismissed.has(s.id));
 
-  function handleLike(answerId: string) {
-    toggleLike(answerId).then(() =>
-      qc.invalidateQueries({ queryKey: ["trending"] })
-    );
-  }
+  const { mutate: handleLike } = useMutation({
+    mutationFn: (answerId: string) => toggleLike(answerId),
+    onMutate: async (answerId) => {
+      await qc.cancelQueries({ queryKey: ["trending"] });
+      const prev = qc.getQueryData<FeedItem[]>(["trending"]);
+      qc.setQueryData<FeedItem[]>(["trending"], (old) =>
+        old?.map((item) =>
+          item.answer_id === answerId
+            ? {
+                ...item,
+                liked_by_me: !item.liked_by_me,
+                likes: item.liked_by_me ? item.likes - 1 : item.likes + 1,
+              }
+            : item
+        )
+      );
+      return { prev };
+    },
+    onError: (_err, _answerId, context) => {
+      if (context?.prev) qc.setQueryData(["trending"], context.prev);
+    },
+  });
 
   async function handleFollow(username: string, userId: string) {
     setRemoving((prev) => new Set([...prev, userId]));
