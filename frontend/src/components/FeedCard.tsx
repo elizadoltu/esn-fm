@@ -466,7 +466,7 @@ export default function FeedCard({
   }
 
   return (
-    <Card>
+    <Card id={`answer-${item.answer_id}`}>
       <CardContent className="p-5">
         {/* Author (home feed only) */}
         {showAuthor && item.author_username && (
