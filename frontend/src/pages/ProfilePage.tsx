@@ -56,10 +56,7 @@ export default function ProfilePage() {
     const el = document.getElementById(hash.slice(1));
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
-    } else if (
-      feedData?.items.length === feedLimit &&
-      feedLimit < 200
-    ) {
+    } else if (feedData?.items.length === feedLimit && feedLimit < 200) {
       setFeedLimit((prev) => prev + 20);
     }
   }, [feedData, feedLoading, profileLoading, location.hash, feedLimit]);
