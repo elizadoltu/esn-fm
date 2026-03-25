@@ -4,8 +4,8 @@ import { pool } from '../db/pool.js';
 
 const router = Router();
 
-// 15-minute in-memory cache for trending — avoids recomputing on every page load
-const TRENDING_TTL_MS = 15 * 60 * 1000;
+// 24-hour in-memory cache for trending — refreshes once per day for a stable ranking
+const TRENDING_TTL_MS = 24 * 60 * 60 * 1000;
 let trendingCache: { rows: unknown[]; fetchedAt: number } | null = null;
 
 async function fetchTrending(): Promise<unknown[]> {
@@ -140,8 +140,8 @@ router.get('/trending', async (req: Request, res: Response, next: NextFunction) 
     const auth = req.headers.authorization;
     if (auth?.startsWith('Bearer ')) {
       try {
-        const payload = jwt.verify(auth.slice(7), process.env.JWT_SECRET!) as { sub: string };
-        viewerId = payload.sub;
+        const payload = jwt.verify(auth.slice(7), process.env.JWT_SECRET!) as { id: string };
+        viewerId = payload.id;
       } catch {
         // Invalid/expired token — treat as anonymous
       }

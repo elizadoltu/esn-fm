@@ -10,10 +10,10 @@ export function useProfile(username: string) {
   });
 }
 
-export function useFeed(username: string, offset = 0) {
+export function useFeed(username: string, limit = 20) {
   return useQuery({
-    queryKey: ["feed", username, offset],
-    queryFn: () => getFeed(username, { limit: 20, offset }),
+    queryKey: ["feed", username, limit],
+    queryFn: () => getFeed(username, { limit }),
     enabled: !!username,
   });
 }

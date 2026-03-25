@@ -31,7 +31,11 @@ export default function ProfilePage() {
   const { data: profile, isLoading: profileLoading } = useProfile(
     username ?? ""
   );
-  const { data: feedData, isLoading: feedLoading } = useFeed(username ?? "");
+  const [feedLimit, setFeedLimit] = useState(20);
+  const { data: feedData, isLoading: feedLoading } = useFeed(
+    username ?? "",
+    feedLimit
+  );
   const like = useLike(username ?? "");
   const followToggle = useFollowToggle(username ?? "");
   const [followModal, setFollowModal] = useState<ModalTab | null>(null);
@@ -41,18 +45,24 @@ export default function ProfilePage() {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
 
-  // Scroll to a specific answer when navigating from a notification link.
-  // Both feedData and profile must be ready — they load in parallel, and
-  // FeedCards aren't rendered until profileLoading is false.
+  // Scroll to a specific answer from a notification / shared link.
+  // Profile and feed must both be ready (they load in parallel).
+  // If the element is not yet in the DOM, keep loading more pages (up to 200)
+  // until it is found — the answer might be older than the initial 20 items.
   useEffect(() => {
     if (feedLoading || profileLoading) return;
-    const hash = location.hash; // e.g. "#answer-<uuid>"
+    const hash = location.hash;
     if (!hash) return;
     const el = document.getElementById(hash.slice(1));
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else if (
+      feedData?.items.length === feedLimit &&
+      feedLimit < 200
+    ) {
+      setFeedLimit((prev) => prev + 20);
     }
-  }, [feedData, feedLoading, profileLoading, location.hash]);
+  }, [feedData, feedLoading, profileLoading, location.hash, feedLimit]);
 
   function handleAvatarFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
