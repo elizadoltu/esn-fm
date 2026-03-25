@@ -9,7 +9,8 @@ export type NotificationType =
   | "new_answer"
   | "new_dm"
   | "follow_request"
-  | "moderation_alert";
+  | "moderation_alert"
+  | "question_of_day";
 
 export interface Notification {
   id: string;

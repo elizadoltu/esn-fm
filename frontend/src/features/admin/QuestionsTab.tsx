@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { EyeOff, Eye } from "lucide-react";
 import { useAdminQuestions } from "@/hooks/useAdmin";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import PaginationBar from "@/features/admin/PaginationBar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function QuestionsTab() {
   const [anonymousOnly, setAnonymousOnly] = useState(false);
@@ -40,7 +41,32 @@ export default function QuestionsTab() {
       </div>
 
       {isLoading && (
-        <p className="text-sm text-muted-foreground">Loading questions…</p>
+        <div className="space-y-3">
+          {[1, 2, 3].map((n) => (
+            <Card key={n}>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex gap-2">
+                  <Skeleton className="h-5 w-28 rounded" />
+                  <Skeleton className="h-5 w-16 rounded" />
+                </div>
+                <Skeleton className="h-4 w-full rounded" />
+                <Skeleton className="h-4 w-4/5 rounded" />
+                <div className="grid grid-cols-2 gap-3 rounded-lg border border-border/50 bg-muted/30 p-3">
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-2.5 w-16 rounded" />
+                    <Skeleton className="h-3.5 w-24 rounded" />
+                    <Skeleton className="h-3 w-20 rounded" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-2.5 w-16 rounded" />
+                    <Skeleton className="h-3.5 w-24 rounded" />
+                    <Skeleton className="h-3 w-20 rounded" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
 
       <div className="space-y-3">
@@ -120,26 +146,13 @@ export default function QuestionsTab() {
         )}
       </div>
 
-      <div className="flex justify-end gap-2">
-        {questionOffset > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setQuestionOffset((o) => o - 20)}
-          >
-            Previous
-          </Button>
-        )}
-        {(questionsData?.questions.length ?? 0) === 20 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setQuestionOffset((o) => o + 20)}
-          >
-            Next
-          </Button>
-        )}
-      </div>
+      <PaginationBar
+        offset={questionOffset}
+        limit={20}
+        total={questionsData?.total ?? 0}
+        onPrev={() => setQuestionOffset((o) => o - 20)}
+        onNext={() => setQuestionOffset((o) => o + 20)}
+      />
     </div>
   );
 }

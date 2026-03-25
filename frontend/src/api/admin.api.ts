@@ -112,7 +112,12 @@ export async function getReports(params: {
   status?: string;
   limit?: number;
   offset?: number;
-}): Promise<{ reports: AdminReport[]; limit: number; offset: number }> {
+}): Promise<{
+  reports: AdminReport[];
+  total: number;
+  limit: number;
+  offset: number;
+}> {
   const res = await client.get("/api/admin/reports", { params });
   return res.data;
 }
@@ -134,7 +139,12 @@ export async function getAdminQuestions(params: {
   anonymous_only?: boolean;
   limit?: number;
   offset?: number;
-}): Promise<{ questions: AdminQuestion[]; limit: number; offset: number }> {
+}): Promise<{
+  questions: AdminQuestion[];
+  total: number;
+  limit: number;
+  offset: number;
+}> {
   const res = await client.get("/api/admin/questions", { params });
   return res.data;
 }
@@ -142,7 +152,12 @@ export async function getAdminQuestions(params: {
 export async function getAuditLogs(params: {
   limit?: number;
   offset?: number;
-}): Promise<{ logs: AuditLog[]; limit: number; offset: number }> {
+}): Promise<{
+  logs: AuditLog[];
+  total: number;
+  limit: number;
+  offset: number;
+}> {
   const res = await client.get("/api/admin/audit-logs", { params });
   return res.data;
 }

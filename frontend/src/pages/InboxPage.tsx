@@ -5,6 +5,7 @@ import {
   usePostAnswer,
 } from "@/hooks/useInbox";
 import QuestionCard from "@/components/QuestionCard";
+import QuestionCardSkeleton from "@/components/QuestionCardSkeleton";
 
 export default function InboxPage() {
   const { data: questions, isLoading } = useInbox();
@@ -14,7 +15,15 @@ export default function InboxPage() {
 
   if (isLoading) {
     return (
-      <div className="py-16 text-center text-muted-foreground">Loading…</div>
+      <div className="mx-auto max-w-xl px-4 py-8 space-y-4">
+        <div className="mb-6">
+          <div className="h-7 w-16 animate-pulse rounded bg-muted mb-2" />
+          <div className="h-4 w-40 animate-pulse rounded bg-muted" />
+        </div>
+        {[1, 2, 3].map((n) => (
+          <QuestionCardSkeleton key={n} />
+        ))}
+      </div>
     );
   }
 

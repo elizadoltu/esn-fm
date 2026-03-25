@@ -27,6 +27,7 @@ export function useBrowserNotifTrigger(notifications: Notification[]) {
           new_answer: `${actorName} answered your question`,
           new_dm: `${actorName} sent you a message`,
           follow_request: `${actorName} wants to follow you`,
+          question_of_day: "Today's question is live — what's your answer?",
         };
         showBrowserNotification(
           "ESN FM",

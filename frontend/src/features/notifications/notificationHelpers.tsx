@@ -5,6 +5,7 @@ import {
   UserPlus,
   HelpCircle,
   Mail,
+  Sparkles,
 } from "lucide-react";
 import type { Notification, NotificationType } from "@/api/notifications.api";
 
@@ -26,6 +27,8 @@ export function notificationIcon(type: NotificationType) {
       return <Mail className="h-4 w-4 text-primary" />;
     case "follow_request":
       return <UserPlus className="h-4 w-4 text-yellow-500" />;
+    case "question_of_day":
+      return <Sparkles className="h-4 w-4 text-primary" />;
     default:
       return <Bell className="h-4 w-4 text-muted-foreground" />;
   }
@@ -50,6 +53,8 @@ export function notificationText(n: Notification): string {
       return `${name} sent you a message`;
     case "follow_request":
       return `${name} wants to follow you`;
+    case "question_of_day":
+      return "Today's question is live — what's your answer?";
     default:
       return "";
   }
@@ -74,6 +79,8 @@ export function notificationLink(n: Notification, myUsername: string): string {
       return `/messages/${n.actor?.username ?? ""}`;
     case "new_question":
       return "/inbox";
+    case "question_of_day":
+      return "/home";
     default:
       return "/notifications";
   }

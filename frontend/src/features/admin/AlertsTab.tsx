@@ -4,6 +4,7 @@ import {
   useMarkModerationAlertRead,
 } from "@/hooks/useAdmin";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface AlertsTabProps {
   onViewReports: () => void;
@@ -35,7 +36,24 @@ export default function AlertsTab({ onViewReports }: Readonly<AlertsTabProps>) {
       </div>
 
       {isLoading && (
-        <p className="text-sm text-muted-foreground">Loading alerts…</p>
+        <div className="space-y-2">
+          {[1, 2, 3, 4].map((n) => (
+            <div
+              key={n}
+              className="flex items-start justify-between gap-4 rounded-lg border border-border bg-card p-4"
+            >
+              <div className="space-y-1.5 flex-1">
+                <div className="flex gap-2">
+                  <Skeleton className="h-5 w-16 rounded" />
+                  <Skeleton className="h-5 w-24 rounded" />
+                </div>
+                <Skeleton className="h-3 w-36 rounded" />
+                <Skeleton className="h-3 w-24 rounded" />
+              </div>
+              <Skeleton className="h-7 w-20 rounded-md shrink-0" />
+            </div>
+          ))}
+        </div>
       )}
 
       <div className="space-y-2">

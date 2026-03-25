@@ -17,7 +17,8 @@ export function useTrending() {
   return useQuery({
     queryKey: ["trending"],
     queryFn: getTrending,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30_000,
+    refetchInterval: 30_000,
   });
 }
 

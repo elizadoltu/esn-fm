@@ -102,7 +102,7 @@ export function useAdminQuestions(params: {
 export function useAuditLogs(params: { offset?: number }) {
   return useQuery({
     queryKey: ["admin", "audit-logs", params],
-    queryFn: () => getAuditLogs({ limit: 50, ...params }),
+    queryFn: () => getAuditLogs({ limit: 20, ...params }),
   });
 }
 
