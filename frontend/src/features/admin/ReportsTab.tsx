@@ -9,9 +9,15 @@ import type { ActionReportTarget } from "@/types/admin";
 export default function ReportsTab() {
   const [reportStatus, setReportStatus] = useState("pending");
   const [reportOffset, setReportOffset] = useState(0);
-  const [actionTarget, setActionTarget] = useState<ActionReportTarget | null>(null);
+  const [actionTarget, setActionTarget] = useState<ActionReportTarget | null>(
+    null
+  );
 
-  const { data: reportsData, isLoading, error } = useAdminReports({
+  const {
+    data: reportsData,
+    isLoading,
+    error,
+  } = useAdminReports({
     status: reportStatus,
     offset: reportOffset,
   });
@@ -89,7 +95,9 @@ export default function ReportsTab() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => actionReport.mutate({ id: r.id, status: "reviewed" })}
+                      onClick={() =>
+                        actionReport.mutate({ id: r.id, status: "reviewed" })
+                      }
                       disabled={actionReport.isPending}
                     >
                       Reviewed
@@ -121,12 +129,20 @@ export default function ReportsTab() {
 
       <div className="flex justify-end gap-2">
         {reportOffset > 0 && (
-          <Button variant="outline" size="sm" onClick={() => setReportOffset((o) => o - 20)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setReportOffset((o) => o - 20)}
+          >
             Previous
           </Button>
         )}
         {(reportsData?.reports.length ?? 0) === 20 && (
-          <Button variant="outline" size="sm" onClick={() => setReportOffset((o) => o + 20)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setReportOffset((o) => o + 20)}
+          >
             Next
           </Button>
         )}

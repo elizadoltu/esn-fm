@@ -17,7 +17,10 @@ interface UploadState {
   pendingFileName: string;
 }
 
-function useUpload(type: "avatar" | "cover", onUploaded: (url: string) => void) {
+function useUpload(
+  type: "avatar" | "cover",
+  onUploaded: (url: string) => void
+) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<UploadState>({
     preview: null,
@@ -48,7 +51,12 @@ function useUpload(type: "avatar" | "cover", onUploaded: (url: string) => void) 
     // Perform side effects outside setState to avoid double-execution in StrictMode
     if (state.cropSrc) URL.revokeObjectURL(state.cropSrc);
     const objectUrl = URL.createObjectURL(croppedFile);
-    setState((s) => ({ ...s, cropSrc: null, preview: objectUrl, loading: true }));
+    setState((s) => ({
+      ...s,
+      cropSrc: null,
+      preview: objectUrl,
+      loading: true,
+    }));
 
     try {
       const url = await uploadImage(croppedFile, type);
@@ -57,7 +65,12 @@ function useUpload(type: "avatar" | "cover", onUploaded: (url: string) => void) 
       setState((s) => ({ ...s, preview: url, loading: false }));
     } catch {
       URL.revokeObjectURL(objectUrl);
-      setState((s) => ({ ...s, preview: null, loading: false, error: "Upload failed. Try again." }));
+      setState((s) => ({
+        ...s,
+        preview: null,
+        loading: false,
+        error: "Upload failed. Try again.",
+      }));
     }
   }
 
@@ -72,15 +85,30 @@ function useUpload(type: "avatar" | "cover", onUploaded: (url: string) => void) 
     if (inputRef.current) inputRef.current.value = "";
   }
 
-  return { inputRef, state, pickFile, onFileChange, onCropConfirm, onCropCancel, clear };
+  return {
+    inputRef,
+    state,
+    pickFile,
+    onFileChange,
+    onCropConfirm,
+    onCropCancel,
+    clear,
+  };
 }
 
 function AvatarUpload({
   currentUrl,
   onUploaded,
 }: Readonly<Omit<ImageUploadProps, "type">>) {
-  const { inputRef, state, pickFile, onFileChange, onCropConfirm, onCropCancel, clear } =
-    useUpload("avatar", onUploaded);
+  const {
+    inputRef,
+    state,
+    pickFile,
+    onFileChange,
+    onCropConfirm,
+    onCropCancel,
+    clear,
+  } = useUpload("avatar", onUploaded);
   const displayUrl = state.preview ?? currentUrl ?? null;
 
   return (
@@ -174,8 +202,15 @@ function CoverUpload({
   currentUrl,
   onUploaded,
 }: Readonly<Omit<ImageUploadProps, "type">>) {
-  const { inputRef, state, pickFile, onFileChange, onCropConfirm, onCropCancel, clear } =
-    useUpload("cover", onUploaded);
+  const {
+    inputRef,
+    state,
+    pickFile,
+    onFileChange,
+    onCropConfirm,
+    onCropCancel,
+    clear,
+  } = useUpload("cover", onUploaded);
   const displayUrl = state.preview ?? currentUrl ?? null;
 
   return (
@@ -193,7 +228,11 @@ function CoverUpload({
       <div className="space-y-2">
         <div className="relative overflow-hidden rounded-lg border border-border bg-muted">
           {displayUrl ? (
-            <img src={displayUrl} alt="Cover" className="h-32 w-full object-cover" />
+            <img
+              src={displayUrl}
+              alt="Cover"
+              className="h-32 w-full object-cover"
+            />
           ) : (
             <div className="h-32 flex items-center justify-center">
               <Camera className="h-8 w-8 text-muted-foreground/40" />
@@ -228,7 +267,9 @@ function CoverUpload({
           </div>
         </div>
 
-        {state.error && <p className="text-xs text-destructive">{state.error}</p>}
+        {state.error && (
+          <p className="text-xs text-destructive">{state.error}</p>
+        )}
         <p className="text-xs text-muted-foreground">
           JPG, PNG or WebP · max 5 MB · 1200×400 recommended
         </p>

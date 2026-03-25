@@ -101,10 +101,7 @@ export default function ReportButton({
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <label
-                  htmlFor="report-reason"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="report-reason" className="text-sm font-medium">
                   Reason
                 </label>
                 <select
@@ -122,10 +119,7 @@ export default function ReportButton({
               </div>
 
               <div className="space-y-1.5">
-                <label
-                  htmlFor="report-message"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="report-message" className="text-sm font-medium">
                   Additional details{" "}
                   <span className="font-normal text-muted-foreground">
                     (optional)

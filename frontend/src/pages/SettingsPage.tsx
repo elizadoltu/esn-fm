@@ -223,7 +223,10 @@ export default function SettingsPage() {
     );
   }
 
-  async function savePhoto(field: "avatar_url" | "cover_image_url", url: string) {
+  async function savePhoto(
+    field: "avatar_url" | "cover_image_url",
+    url: string
+  ) {
     setForm((p) => ({ ...p, [field]: url }));
     if (!url) return;
     try {

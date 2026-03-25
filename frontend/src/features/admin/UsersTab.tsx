@@ -16,9 +16,15 @@ export default function UsersTab({ isAdmin }: Readonly<UsersTabProps>) {
   const { user: me } = useAuth();
   const [userSearch, setUserSearch] = useState("");
   const [userOffset, setUserOffset] = useState(0);
-  const [deleteTarget, setDeleteTarget] = useState<DeleteUserTarget | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<DeleteUserTarget | null>(
+    null
+  );
 
-  const { data: usersData, isLoading, error } = useAdminUsers({
+  const {
+    data: usersData,
+    isLoading,
+    error,
+  } = useAdminUsers({
     q: userSearch || undefined,
     offset: userOffset,
   });
@@ -50,23 +56,30 @@ export default function UsersTab({ isAdmin }: Readonly<UsersTabProps>) {
         <table className="w-full text-sm">
           <thead className="bg-muted/40">
             <tr>
-              {["User", "Email", "Role", "Answers", "Joined", "Actions"].map((h) => (
-                <th
-                  key={h}
-                  className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground"
-                >
-                  {h}
-                </th>
-              ))}
+              {["User", "Email", "Role", "Answers", "Joined", "Actions"].map(
+                (h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground"
+                  >
+                    {h}
+                  </th>
+                )
+              )}
             </tr>
           </thead>
           <tbody>
             {usersData?.users.map((u) => (
-              <tr key={u.id} className="border-t border-border hover:bg-accent/30">
+              <tr
+                key={u.id}
+                className="border-t border-border hover:bg-accent/30"
+              >
                 <td className="px-4 py-3">
                   <div>
                     <p className="font-medium">{u.display_name}</p>
-                    <p className="text-xs text-muted-foreground">@{u.username}</p>
+                    <p className="text-xs text-muted-foreground">
+                      @{u.username}
+                    </p>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
@@ -85,7 +98,10 @@ export default function UsersTab({ isAdmin }: Readonly<UsersTabProps>) {
                         onChange={(e) =>
                           updateRole.mutate({
                             id: u.id,
-                            role: e.target.value as "user" | "moderator" | "admin",
+                            role: e.target.value as
+                              | "user"
+                              | "moderator"
+                              | "admin",
                           })
                         }
                         className="rounded border border-border bg-background px-2 py-1 text-xs"
@@ -127,12 +143,20 @@ export default function UsersTab({ isAdmin }: Readonly<UsersTabProps>) {
         </p>
         <div className="flex gap-2">
           {userOffset > 0 && (
-            <Button variant="outline" size="sm" onClick={() => setUserOffset((o) => o - 20)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setUserOffset((o) => o - 20)}
+            >
               Previous
             </Button>
           )}
           {(usersData?.users.length ?? 0) === 20 && (
-            <Button variant="outline" size="sm" onClick={() => setUserOffset((o) => o + 20)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setUserOffset((o) => o + 20)}
+            >
               Next
             </Button>
           )}

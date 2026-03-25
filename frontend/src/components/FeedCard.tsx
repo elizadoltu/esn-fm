@@ -109,7 +109,9 @@ function CommentItem({
             {comment.author.display_name ?? comment.author.username}
           </Link>
         ) : (
-          <p className="text-xs font-medium text-foreground/80 mb-0.5">Deleted</p>
+          <p className="text-xs font-medium text-foreground/80 mb-0.5">
+            Deleted
+          </p>
         )}
         {comment.content && (
           <p className="text-sm text-foreground">{comment.content}</p>
@@ -171,7 +173,9 @@ function CommentItem({
                   {reply.author.display_name ?? reply.author.username}
                 </Link>
               ) : (
-                <p className="text-xs font-medium text-foreground/80 mb-0.5">Deleted</p>
+                <p className="text-xs font-medium text-foreground/80 mb-0.5">
+                  Deleted
+                </p>
               )}
               {reply.content && (
                 <p className="text-sm text-foreground">{reply.content}</p>
@@ -226,7 +230,8 @@ function CommentItem({
               className="text-xs text-primary hover:underline"
               onClick={() => setShowAllReplies(true)}
             >
-              Show {hiddenReplies} more {hiddenReplies === 1 ? "reply" : "replies"}
+              Show {hiddenReplies} more{" "}
+              {hiddenReplies === 1 ? "reply" : "replies"}
             </button>
           )}
           {showAllReplies && comment.replies.length > REPLIES_VISIBLE && (
@@ -569,25 +574,28 @@ export default function FeedCard({
               </p>
             )}
 
-            {(showAllComments ? comments : comments.slice(0, 3)).map((comment) => (
-              <CommentItem
-                key={comment.id}
-                comment={comment}
-                answerId={item.answer_id}
-                onDelete={(id) => deleteComment.mutate(id)}
-                onReply={(parentId, name) => {
-                  setReplyTo({ id: parentId, name });
-                  setCommentText(`@${name} `);
-                }}
-              />
-            ))}
+            {(showAllComments ? comments : comments.slice(0, 3)).map(
+              (comment) => (
+                <CommentItem
+                  key={comment.id}
+                  comment={comment}
+                  answerId={item.answer_id}
+                  onDelete={(id) => deleteComment.mutate(id)}
+                  onReply={(parentId, name) => {
+                    setReplyTo({ id: parentId, name });
+                    setCommentText(`@${name} `);
+                  }}
+                />
+              )
+            )}
 
             {comments.length > 3 && !showAllComments && (
               <button
                 className="text-xs text-primary hover:underline"
                 onClick={() => setShowAllComments(true)}
               >
-                Show {comments.length - 3} more comment{comments.length - 3 === 1 ? "" : "s"}
+                Show {comments.length - 3} more comment
+                {comments.length - 3 === 1 ? "" : "s"}
               </button>
             )}
             {comments.length > 3 && showAllComments && (

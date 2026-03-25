@@ -102,7 +102,11 @@ export default function ActionReportModal({
           <Button variant="outline" size="sm" onClick={onClose}>
             Cancel
           </Button>
-          <Button size="sm" onClick={handleSubmit} disabled={actionReport.isPending}>
+          <Button
+            size="sm"
+            onClick={handleSubmit}
+            disabled={actionReport.isPending}
+          >
             {actionReport.isPending ? "Saving…" : "Confirm action"}
           </Button>
         </div>

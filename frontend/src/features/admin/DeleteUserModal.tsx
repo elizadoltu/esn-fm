@@ -41,7 +41,9 @@ export default function DeleteUserModal({
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-xl">
         <h2 className="mb-1 text-lg font-bold">Delete account</h2>
         <p className="mb-4 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{user.display_name}</span>{" "}
+          <span className="font-medium text-foreground">
+            {user.display_name}
+          </span>{" "}
           (@{user.username}) · {user.email}
         </p>
 
@@ -57,7 +59,11 @@ export default function DeleteUserModal({
               </p>
             </div>
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" size="sm" onClick={() => setConfirmed(false)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmed(false)}
+              >
                 Go back
               </Button>
               <Button

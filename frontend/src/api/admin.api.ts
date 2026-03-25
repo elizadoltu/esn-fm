@@ -123,7 +123,11 @@ export async function actionReport(
   action_type?: string,
   action_message?: string
 ): Promise<void> {
-  await client.patch(`/api/admin/reports/${id}`, { status, action_type, action_message });
+  await client.patch(`/api/admin/reports/${id}`, {
+    status,
+    action_type,
+    action_message,
+  });
 }
 
 export async function getAdminQuestions(params: {
@@ -144,7 +148,9 @@ export async function getAuditLogs(params: {
 }
 
 export async function getModerationAlerts(): Promise<ModerationAlert[]> {
-  const res = await client.get<ModerationAlert[]>("/api/admin/moderation-alerts");
+  const res = await client.get<ModerationAlert[]>(
+    "/api/admin/moderation-alerts"
+  );
   return res.data;
 }
 

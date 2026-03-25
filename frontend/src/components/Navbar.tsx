@@ -126,18 +126,21 @@ export default function Navbar() {
                     </Link>
                   </Button>
                 ))}
-                {user && (user.role === "admin" || user.role === "moderator") && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    asChild
-                    className={isActive("/admin") ? activeClass : inactiveClass}
-                  >
-                    <Link to="/admin" title="Admin Dashboard">
-                      <ShieldCheck className="h-5 w-5" />
-                    </Link>
-                  </Button>
-                )}
+                {user &&
+                  (user.role === "admin" || user.role === "moderator") && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      asChild
+                      className={
+                        isActive("/admin") ? activeClass : inactiveClass
+                      }
+                    >
+                      <Link to="/admin" title="Admin Dashboard">
+                        <ShieldCheck className="h-5 w-5" />
+                      </Link>
+                    </Button>
+                  )}
                 <Button
                   variant="ghost"
                   size="sm"

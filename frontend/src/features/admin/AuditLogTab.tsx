@@ -28,10 +28,17 @@ export default function AuditLogTab() {
           </thead>
           <tbody>
             {auditData?.logs.map((log) => (
-              <tr key={log.id} className="border-t border-border hover:bg-accent/30">
+              <tr
+                key={log.id}
+                className="border-t border-border hover:bg-accent/30"
+              >
                 <td className="px-4 py-3">
-                  <p className="font-medium text-xs">{log.admin_display_name}</p>
-                  <p className="text-xs text-muted-foreground">@{log.admin_username}</p>
+                  <p className="font-medium text-xs">
+                    {log.admin_display_name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    @{log.admin_username}
+                  </p>
                 </td>
                 <td className="px-4 py-3">
                   <span className="rounded bg-muted px-2 py-0.5 text-xs font-mono">
@@ -53,7 +60,10 @@ export default function AuditLogTab() {
             ))}
             {auditData?.logs.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground text-sm">
+                <td
+                  colSpan={5}
+                  className="px-4 py-8 text-center text-muted-foreground text-sm"
+                >
                   No audit log entries
                 </td>
               </tr>
@@ -64,12 +74,20 @@ export default function AuditLogTab() {
 
       <div className="flex justify-end gap-2">
         {auditOffset > 0 && (
-          <Button variant="outline" size="sm" onClick={() => setAuditOffset((o) => o - 50)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setAuditOffset((o) => o - 50)}
+          >
             Previous
           </Button>
         )}
         {(auditData?.logs.length ?? 0) === 50 && (
-          <Button variant="outline" size="sm" onClick={() => setAuditOffset((o) => o + 50)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setAuditOffset((o) => o + 50)}
+          >
             Next
           </Button>
         )}

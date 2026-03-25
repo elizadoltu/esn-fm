@@ -1,7 +1,9 @@
 import { useAdminStats } from "@/hooks/useAdmin";
 import { Card, CardContent } from "@/components/ui/card";
 
-const STAT_ITEMS = (stats: NonNullable<ReturnType<typeof useAdminStats>["data"]>) => [
+const STAT_ITEMS = (
+  stats: NonNullable<ReturnType<typeof useAdminStats>["data"]>
+) => [
   { label: "Total users", value: stats.users.total },
   { label: "New today", value: stats.users.today },
   { label: "Questions", value: stats.questions },

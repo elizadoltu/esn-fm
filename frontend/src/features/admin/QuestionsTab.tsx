@@ -34,8 +34,8 @@ export default function QuestionsTab() {
           {anonymousOnly ? "Anonymous only" : "All questions"}
         </button>
         <p className="text-xs text-muted-foreground">
-          Real sender identity is visible only to admins and moderators.
-          Each access is logged in the audit trail.
+          Real sender identity is visible only to admins and moderators. Each
+          access is logged in the audit trail.
         </p>
       </div>
 
@@ -70,24 +70,38 @@ export default function QuestionsTab() {
                       Recipient
                     </p>
                     <p className="font-medium">{q.recipient.display_name}</p>
-                    <p className="text-muted-foreground">@{q.recipient.username}</p>
+                    <p className="text-muted-foreground">
+                      @{q.recipient.username}
+                    </p>
                   </div>
                   <div>
                     <p className="mb-0.5 font-semibold text-muted-foreground uppercase tracking-wide text-[10px]">
-                      {q.is_anonymous ? "Real sender (hidden from recipient)" : "Sender"}
+                      {q.is_anonymous
+                        ? "Real sender (hidden from recipient)"
+                        : "Sender"}
                     </p>
                     {q.real_sender && (
                       <>
-                        <p className="font-medium">{q.real_sender.display_name}</p>
-                        <p className="text-muted-foreground">@{q.real_sender.username}</p>
-                        <p className="text-muted-foreground">{q.real_sender.email}</p>
+                        <p className="font-medium">
+                          {q.real_sender.display_name}
+                        </p>
+                        <p className="text-muted-foreground">
+                          @{q.real_sender.username}
+                        </p>
+                        <p className="text-muted-foreground">
+                          {q.real_sender.email}
+                        </p>
                       </>
                     )}
                     {!q.real_sender && q.sender_name && (
-                      <p className="text-muted-foreground">{q.sender_name} (no account)</p>
+                      <p className="text-muted-foreground">
+                        {q.sender_name} (no account)
+                      </p>
                     )}
                     {!q.real_sender && !q.sender_name && (
-                      <p className="text-muted-foreground italic">No identity data</p>
+                      <p className="text-muted-foreground italic">
+                        No identity data
+                      </p>
                     )}
                   </div>
                 </div>
@@ -100,18 +114,28 @@ export default function QuestionsTab() {
           </Card>
         ))}
         {questionsData?.questions.length === 0 && (
-          <p className="py-8 text-center text-muted-foreground">No questions found</p>
+          <p className="py-8 text-center text-muted-foreground">
+            No questions found
+          </p>
         )}
       </div>
 
       <div className="flex justify-end gap-2">
         {questionOffset > 0 && (
-          <Button variant="outline" size="sm" onClick={() => setQuestionOffset((o) => o - 20)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setQuestionOffset((o) => o - 20)}
+          >
             Previous
           </Button>
         )}
         {(questionsData?.questions.length ?? 0) === 20 && (
-          <Button variant="outline" size="sm" onClick={() => setQuestionOffset((o) => o + 20)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setQuestionOffset((o) => o + 20)}
+          >
             Next
           </Button>
         )}
