@@ -50,6 +50,8 @@ export function notificationText(n: Notification): string {
       return `${name} sent you a message`;
     case "follow_request":
       return `${name} wants to follow you`;
+    default:
+      return "";
   }
 }
 
