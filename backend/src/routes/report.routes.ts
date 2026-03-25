@@ -11,7 +11,6 @@ import {
 
 const router = Router();
 
-
 /**
  * @openapi
  * /api/reports:
@@ -111,7 +110,9 @@ async function triggerModerationEmails(
       const r = await pool.query(`SELECT content FROM comments WHERE id = $1`, [data.content_id]);
       contentExcerpt = r.rows[0]?.content ?? '';
     } else if (data.content_type === 'user') {
-      const r = await pool.query(`SELECT display_name, username FROM users WHERE id = $1`, [data.content_id]);
+      const r = await pool.query(`SELECT display_name, username FROM users WHERE id = $1`, [
+        data.content_id,
+      ]);
       contentExcerpt = r.rows[0] ? `${r.rows[0].display_name} (@${r.rows[0].username})` : '';
     }
   } catch {

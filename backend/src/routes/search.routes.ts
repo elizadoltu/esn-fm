@@ -130,9 +130,10 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 router.get('/trending', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const now = Date.now();
-    const rows = (trendingCache && now - trendingCache.fetchedAt < TRENDING_TTL_MS)
-      ? trendingCache.rows
-      : await fetchTrending();
+    const rows =
+      trendingCache && now - trendingCache.fetchedAt < TRENDING_TTL_MS
+        ? trendingCache.rows
+        : await fetchTrending();
 
     // Resolve optional viewer so liked_by_me is accurate
     let viewerId: string | null = null;

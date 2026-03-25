@@ -11,19 +11,24 @@ export interface ModerationReportInfo {
   reporterMessage?: string;
 }
 
-export function buildModerationEmailHtml(report: ModerationReportInfo, adminDashboardUrl: string): string {
-  const batchNote = report.batchCount > 1
-    ? `<p style="margin:0 0 16px;color:#E2A300;font-size:13px;font-weight:600;">
+export function buildModerationEmailHtml(
+  report: ModerationReportInfo,
+  adminDashboardUrl: string
+): string {
+  const batchNote =
+    report.batchCount > 1
+      ? `<p style="margin:0 0 16px;color:#E2A300;font-size:13px;font-weight:600;">
         ⚠ ${report.batchCount} reports have been filed for this content in the last 5 minutes.
        </p>`
-    : '';
+      : '';
 
   const reasonLabel = report.reason.replaceAll('_', ' ');
   const typeLabel = report.contentType.charAt(0).toUpperCase() + report.contentType.slice(1);
   const reviewUrl = `${adminDashboardUrl}/admin?tab=reports&id=${report.reportId}`;
-  const excerptTruncated = report.contentExcerpt.length > 200
-    ? report.contentExcerpt.slice(0, 200) + '…'
-    : report.contentExcerpt;
+  const excerptTruncated =
+    report.contentExcerpt.length > 200
+      ? report.contentExcerpt.slice(0, 200) + '…'
+      : report.contentExcerpt;
 
   const contentPreview = report.contentExcerpt
     ? `<p style="margin:0 0 8px;color:#8a8980;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Reported content preview</p>

@@ -1,7 +1,10 @@
 import { emailShell, ctaButton } from '../shell.js';
 import type { ModerationReportInfo } from './moderation.js';
 
-export function buildDigestEmailHtml(reports: ModerationReportInfo[], adminDashboardUrl: string): string {
+export function buildDigestEmailHtml(
+  reports: ModerationReportInfo[],
+  adminDashboardUrl: string
+): string {
   const rows = reports
     .map(
       (r) => `<tr>

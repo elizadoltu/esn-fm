@@ -79,7 +79,11 @@ export async function createModerationAlerts(reportId: string): Promise<void> {
           [a.id, reportId]
         )
         .then(() => {
-          sendSSE(a.id, 'notification', { type: 'moderation_alert', referenceId: reportId, actorId: null });
+          sendSSE(a.id, 'notification', {
+            type: 'moderation_alert',
+            referenceId: reportId,
+            actorId: null,
+          });
           sendPushToUser(a.id, {
             title: 'ESN FM — New Report',
             body: pushBody.moderation_alert,

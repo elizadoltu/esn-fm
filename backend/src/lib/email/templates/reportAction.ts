@@ -48,11 +48,15 @@ export function buildReportActionEmailHtml(
       </tr>
     </table>
 
-    ${adminMessage ? `
+    ${
+      adminMessage
+        ? `
     <p style="margin:0 0 8px;color:#8a8980;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Message from the moderation team</p>
     <p style="margin:0 0 24px;padding:12px 16px;background-color:#222;border-left:3px solid #444;border-radius:4px;color:#E2E1DF;font-size:13px;line-height:1.6;">
       ${adminMessage}
-    </p>` : ''}
+    </p>`
+        : ''
+    }
 
     ${divider()}
     <p style="margin:0;color:#8a8980;font-size:12px;line-height:1.6;">

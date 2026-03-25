@@ -2,7 +2,11 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { pool } from '../db/pool.js';
 import { verifyJWT } from '../middleware/auth.js';
 import { verifyAdmin, verifyAdminOnly } from '../middleware/adminAuth.js';
-import { sendEmail, buildAccountDeletionEmailHtml, buildReportActionEmailHtml } from '../lib/email/index.js';
+import {
+  sendEmail,
+  buildAccountDeletionEmailHtml,
+  buildReportActionEmailHtml,
+} from '../lib/email/index.js';
 
 const router = Router();
 
@@ -227,7 +231,9 @@ router.delete(
       const { reason, message } = req.body as { reason?: string; message?: string };
       const validReasons = ['spam', 'harassment', 'policy_violation', 'other'];
       if (!reason || !validReasons.includes(reason)) {
-        res.status(400).json({ error: 'Invalid reason. Must be one of: ' + validReasons.join(', ') });
+        res
+          .status(400)
+          .json({ error: 'Invalid reason. Must be one of: ' + validReasons.join(', ') });
         return;
       }
 
@@ -261,11 +267,7 @@ router.delete(
 
       // Send notification email (fire-and-forget — don't block the response)
       const html = buildAccountDeletionEmailHtml(user.display_name, reason, message);
-      sendEmail(
-        user.email,
-        '[ESN FM] Your account has been removed',
-        html
-      ).catch(() => {});
+      sendEmail(user.email, '[ESN FM] Your account has been removed', html).catch(() => {});
 
       res.json({ deleted: true, userId: user.id });
     } catch (err) {
@@ -486,10 +488,10 @@ router.patch('/reports/:id', async (req: Request, res: Response, next: NextFunct
     if (status === 'actioned' && action_type) {
       // Resolve content owner email based on content_type
       const ownerQuery: Record<string, string> = {
-        user:     `SELECT u.display_name, u.email FROM users u WHERE u.id = $1`,
-        answer:   `SELECT u.display_name, u.email FROM answers a JOIN users u ON u.id = a.author_id WHERE a.id = $1`,
+        user: `SELECT u.display_name, u.email FROM users u WHERE u.id = $1`,
+        answer: `SELECT u.display_name, u.email FROM answers a JOIN users u ON u.id = a.author_id WHERE a.id = $1`,
         question: `SELECT u.display_name, u.email FROM questions q JOIN users u ON u.id = q.recipient_id WHERE q.id = $1`,
-        comment:  `SELECT u.display_name, u.email FROM comments c JOIN answers a ON a.id = c.answer_id JOIN users u ON u.id = a.author_id WHERE c.id = $1`,
+        comment: `SELECT u.display_name, u.email FROM comments c JOIN answers a ON a.id = c.answer_id JOIN users u ON u.id = a.author_id WHERE c.id = $1`,
       };
 
       const ownerSql = ownerQuery[report.content_type as string];
@@ -538,27 +540,31 @@ router.patch('/reports/:id', async (req: Request, res: Response, next: NextFunct
  *       200:
  *         description: Paginated audit logs
  */
-router.get('/audit-logs', verifyAdminOnly, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const limit = Math.min(Number(req.query.limit) || 50, 200);
-    const offset = Number(req.query.offset) || 0;
+router.get(
+  '/audit-logs',
+  verifyAdminOnly,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const limit = Math.min(Number(req.query.limit) || 50, 200);
+      const offset = Number(req.query.offset) || 0;
 
-    const result = await pool.query(
-      `SELECT
+      const result = await pool.query(
+        `SELECT
          al.id, al.action, al.target_type, al.target_id, al.metadata, al.created_at,
          u.username AS admin_username, u.display_name AS admin_display_name
        FROM audit_logs al
        JOIN users u ON u.id = al.admin_id
        ORDER BY al.created_at DESC
        LIMIT $1 OFFSET $2`,
-      [limit, offset]
-    );
+        [limit, offset]
+      );
 
-    res.json({ logs: result.rows, limit, offset });
-  } catch (err) {
-    next(err);
+      res.json({ logs: result.rows, limit, offset });
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 /**
  * @openapi
@@ -605,18 +611,21 @@ router.get('/moderation-alerts', async (req: Request, res: Response, next: NextF
  *       200:
  *         description: "Returns { count: number }"
  */
-router.get('/moderation-alerts/unread-count', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const result = await pool.query(
-      `SELECT COUNT(*)::int AS count FROM notifications
+router.get(
+  '/moderation-alerts/unread-count',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await pool.query(
+        `SELECT COUNT(*)::int AS count FROM notifications
        WHERE recipient_id = $1 AND type = 'moderation_alert' AND is_read = FALSE`,
-      [req.user!.id]
-    );
-    res.json({ count: result.rows[0].count });
-  } catch (err) {
-    next(err);
+        [req.user!.id]
+      );
+      res.json({ count: result.rows[0].count });
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 /**
  * @openapi
@@ -630,18 +639,21 @@ router.get('/moderation-alerts/unread-count', async (req: Request, res: Response
  *       200:
  *         description: All marked as read
  */
-router.patch('/moderation-alerts/read-all', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    await pool.query(
-      `UPDATE notifications SET is_read = TRUE
+router.patch(
+  '/moderation-alerts/read-all',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await pool.query(
+        `UPDATE notifications SET is_read = TRUE
        WHERE recipient_id = $1 AND type = 'moderation_alert' AND is_read = FALSE`,
-      [req.user!.id]
-    );
-    res.json({ ok: true });
-  } catch (err) {
-    next(err);
+        [req.user!.id]
+      );
+      res.json({ ok: true });
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 /**
  * @openapi
@@ -660,18 +672,21 @@ router.patch('/moderation-alerts/read-all', async (req: Request, res: Response, 
  *       200:
  *         description: Marked as read
  */
-router.patch('/moderation-alerts/:id/read', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    await pool.query(
-      `UPDATE notifications SET is_read = TRUE
+router.patch(
+  '/moderation-alerts/:id/read',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await pool.query(
+        `UPDATE notifications SET is_read = TRUE
        WHERE id = $1 AND recipient_id = $2 AND type = 'moderation_alert'`,
-      [req.params.id, req.user!.id]
-    );
-    res.json({ ok: true });
-  } catch (err) {
-    next(err);
+        [req.params.id, req.user!.id]
+      );
+      res.json({ ok: true });
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 /**
  * @openapi
@@ -700,10 +715,10 @@ router.patch('/preferences', async (req: Request, res: Response, next: NextFunct
       res.status(400).json({ error: 'moderation_email_digest must be a boolean' });
       return;
     }
-    await pool.query(
-      `UPDATE users SET moderation_email_digest = $1 WHERE id = $2`,
-      [moderation_email_digest, req.user!.id]
-    );
+    await pool.query(`UPDATE users SET moderation_email_digest = $1 WHERE id = $2`, [
+      moderation_email_digest,
+      req.user!.id,
+    ]);
     res.json({ ok: true, moderation_email_digest });
   } catch (err) {
     next(err);
