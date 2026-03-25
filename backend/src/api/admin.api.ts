@@ -132,17 +132,14 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
     const { reason, message } = req.body as { reason?: string; message?: string };
     const validReasons = ['spam', 'harassment', 'policy_violation', 'other'];
     if (!reason || !validReasons.includes(reason)) {
-      res
-        .status(400)
-        .json({ error: 'Invalid reason. Must be one of: ' + validReasons.join(', ') });
+      res.status(400).json({ error: 'Invalid reason. Must be one of: ' + validReasons.join(', ') });
       return;
     }
 
     // Fetch user before deletion for email + audit
-    const userResult = await pool.query(
-      `SELECT id, email, display_name FROM users WHERE id = $1`,
-      [req.params.id]
-    );
+    const userResult = await pool.query(`SELECT id, email, display_name FROM users WHERE id = $1`, [
+      req.params.id,
+    ]);
     const user = userResult.rows[0];
     if (!user) {
       res.status(404).json({ error: 'User not found' });

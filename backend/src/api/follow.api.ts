@@ -140,11 +140,7 @@ export async function unfollowUser(req: Request, res: Response, next: NextFuncti
   }
 }
 
-export async function getFollowers(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function getFollowers(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [
       req.params.username,
@@ -169,11 +165,7 @@ export async function getFollowers(
   }
 }
 
-export async function getFollowing(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function getFollowing(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [
       req.params.username,

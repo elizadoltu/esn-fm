@@ -172,11 +172,7 @@ export async function getAnswersByUsername(
   }
 }
 
-export async function deleteAnswer(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function deleteAnswer(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const result = await pool.query(
       `DELETE FROM answers WHERE id = $1 AND author_id = $2 RETURNING id`,

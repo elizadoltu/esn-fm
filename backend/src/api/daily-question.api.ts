@@ -55,9 +55,7 @@ export async function getActiveDailyQuestionAnswers(
     const limit = Math.min(Number(req.query.limit) || 20, 50);
     const offset = Number(req.query.offset) || 0;
 
-    const dq = await pool.query(
-      `SELECT id FROM daily_questions WHERE is_active = TRUE LIMIT 1`
-    );
+    const dq = await pool.query(`SELECT id FROM daily_questions WHERE is_active = TRUE LIMIT 1`);
     if (dq.rows.length === 0) {
       res.json({ items: [], limit, offset });
       return;
@@ -160,10 +158,9 @@ export async function toggleDailyAnswerLike(
     const { id } = req.params;
     const userId = req.user!.id;
 
-    const answer = await pool.query(
-      `SELECT author_id FROM daily_question_answers WHERE id = $1`,
-      [id]
-    );
+    const answer = await pool.query(`SELECT author_id FROM daily_question_answers WHERE id = $1`, [
+      id,
+    ]);
     if (answer.rows.length === 0) {
       res.status(404).json({ error: 'Answer not found' });
       return;
@@ -237,10 +234,9 @@ export async function postDailyAnswerComment(
       return;
     }
 
-    const answer = await pool.query(
-      `SELECT author_id FROM daily_question_answers WHERE id = $1`,
-      [id]
-    );
+    const answer = await pool.query(`SELECT author_id FROM daily_question_answers WHERE id = $1`, [
+      id,
+    ]);
     if (answer.rows.length === 0) {
       res.status(404).json({ error: 'Answer not found' });
       return;

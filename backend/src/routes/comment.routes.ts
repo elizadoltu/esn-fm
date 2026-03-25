@@ -1,11 +1,6 @@
 import { Router } from 'express';
 import { verifyJWT } from '../middleware/auth.js';
-import {
-  postComment,
-  getComments,
-  toggleCommentLike,
-  deleteComment,
-} from '../api/comment.api.js';
+import { postComment, getComments, toggleCommentLike, deleteComment } from '../api/comment.api.js';
 
 const router = Router();
 

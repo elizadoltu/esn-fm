@@ -3,11 +3,7 @@ import { pool } from '../db/pool.js';
 import { sendQuestionSchema } from '../validators/question.validator.js';
 import { createNotification } from '../db/notifications.js';
 
-export async function sendQuestion(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function sendQuestion(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const data = sendQuestionSchema.parse(req.body);
 

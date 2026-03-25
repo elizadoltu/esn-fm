@@ -94,11 +94,7 @@ async function triggerModerationEmails(
   );
 }
 
-export async function submitReport(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function submitReport(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const data = reportSchema.parse(req.body);
 
