@@ -77,7 +77,8 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
 
     // Notify answer author (if different from commenter)
     if (answer.author_id !== req.user!.id) {
-      await createNotification(answer.author_id, 'new_comment', comment.id, req.user!.id);
+      // reference_id = answer.id so the client can deep-link to the specific answer
+      await createNotification(answer.author_id, 'new_comment', answer.id, req.user!.id);
     }
 
     // If it's a reply, also notify parent comment author
@@ -89,7 +90,7 @@ router.post('/', verifyJWT, async (req: Request, res: Response, next: NextFuncti
         await createNotification(
           parentAuthor.rows[0].author_id,
           'new_reply',
-          comment.id,
+          answer.id,
           req.user!.id
         );
       }

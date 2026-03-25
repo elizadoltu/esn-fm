@@ -8,7 +8,8 @@ export type NotificationType =
   | "new_follower"
   | "new_answer"
   | "new_dm"
-  | "follow_request";
+  | "follow_request"
+  | "moderation_alert";
 
 export interface Notification {
   id: string;

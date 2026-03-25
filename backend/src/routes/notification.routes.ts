@@ -31,6 +31,7 @@ router.get('/', verifyJWT, async (req: Request, res: Response, next: NextFunctio
        FROM notifications n
        LEFT JOIN users u ON u.id = n.actor_id
        WHERE n.recipient_id = $1
+         AND n.type != 'moderation_alert'
          ${unreadOnly ? 'AND n.is_read = FALSE' : ''}
        ORDER BY n.created_at DESC
        LIMIT 50`,
@@ -74,7 +75,7 @@ router.get('/', verifyJWT, async (req: Request, res: Response, next: NextFunctio
 router.get('/unread-count', verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await pool.query(
-      `SELECT COUNT(*)::int AS count FROM notifications WHERE recipient_id = $1 AND is_read = FALSE`,
+      `SELECT COUNT(*)::int AS count FROM notifications WHERE recipient_id = $1 AND is_read = FALSE AND type != 'moderation_alert'`,
       [req.user!.id]
     );
     res.json({ count: result.rows[0].count });

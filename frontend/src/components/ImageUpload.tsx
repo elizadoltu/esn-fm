@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Camera, Loader2, X } from "lucide-react";
 import { uploadImage } from "@/api/upload.api";
+import ImageCropModal from "@/components/ImageCropModal";
 
 interface ImageUploadProps {
   type: "avatar" | "cover";
@@ -8,53 +9,93 @@ interface ImageUploadProps {
   onUploaded: (url: string) => void;
 }
 
-export default function ImageUpload({
-  type,
-  currentUrl,
-  onUploaded,
-}: Readonly<ImageUploadProps>) {
+interface UploadState {
+  preview: string | null;
+  loading: boolean;
+  error: string | null;
+  cropSrc: string | null;
+  pendingFileName: string;
+}
+
+function useUpload(type: "avatar" | "cover", onUploaded: (url: string) => void) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [state, setState] = useState<UploadState>({
+    preview: null,
+    loading: false,
+    error: null,
+    cropSrc: null,
+    pendingFileName: "",
+  });
 
-  const displayUrl = preview ?? currentUrl ?? null;
+  function pickFile() {
+    inputRef.current?.click();
+  }
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Local preview immediately
+    if (inputRef.current) inputRef.current.value = "";
     const objectUrl = URL.createObjectURL(file);
-    setPreview(objectUrl);
-    setError(null);
-    setLoading(true);
+    setState((s) => ({
+      ...s,
+      cropSrc: objectUrl,
+      pendingFileName: file.name,
+      error: null,
+    }));
+  }
+
+  async function onCropConfirm(croppedFile: File) {
+    // Perform side effects outside setState to avoid double-execution in StrictMode
+    if (state.cropSrc) URL.revokeObjectURL(state.cropSrc);
+    const objectUrl = URL.createObjectURL(croppedFile);
+    setState((s) => ({ ...s, cropSrc: null, preview: objectUrl, loading: true }));
 
     try {
-      const url = await uploadImage(file, type);
+      const url = await uploadImage(croppedFile, type);
       onUploaded(url);
-      // Replace blob URL with the real Cloudinary URL
-      setPreview(url);
+      URL.revokeObjectURL(objectUrl);
+      setState((s) => ({ ...s, preview: url, loading: false }));
     } catch {
-      setError("Upload failed. Try again.");
-      setPreview(null);
-    } finally {
-      setLoading(false);
-      // Reset input so the same file can be re-selected after an error
-      if (inputRef.current) inputRef.current.value = "";
+      URL.revokeObjectURL(objectUrl);
+      setState((s) => ({ ...s, preview: null, loading: false, error: "Upload failed. Try again." }));
     }
   }
 
+  function onCropCancel() {
+    if (state.cropSrc) URL.revokeObjectURL(state.cropSrc);
+    setState((s) => ({ ...s, cropSrc: null }));
+  }
+
   function clear() {
-    setPreview(null);
+    setState((s) => ({ ...s, preview: null }));
     onUploaded("");
     if (inputRef.current) inputRef.current.value = "";
   }
 
-  if (type === "avatar") {
-    return (
+  return { inputRef, state, pickFile, onFileChange, onCropConfirm, onCropCancel, clear };
+}
+
+function AvatarUpload({
+  currentUrl,
+  onUploaded,
+}: Readonly<Omit<ImageUploadProps, "type">>) {
+  const { inputRef, state, pickFile, onFileChange, onCropConfirm, onCropCancel, clear } =
+    useUpload("avatar", onUploaded);
+  const displayUrl = state.preview ?? currentUrl ?? null;
+
+  return (
+    <>
+      {state.cropSrc && (
+        <ImageCropModal
+          imageSrc={state.cropSrc}
+          fileName={state.pendingFileName}
+          type="avatar"
+          onConfirm={onCropConfirm}
+          onCancel={onCropCancel}
+        />
+      )}
+
       <div className="flex items-center gap-4">
-        {/* Avatar circle */}
         <div className="relative shrink-0">
           {displayUrl ? (
             <img
@@ -68,23 +109,21 @@ export default function ImageUpload({
             </div>
           )}
 
-          {/* Overlay button */}
           <button
             type="button"
-            onClick={() => inputRef.current?.click()}
-            disabled={loading}
+            onClick={pickFile}
+            disabled={state.loading}
             className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 hover:opacity-100 transition-opacity disabled:cursor-not-allowed"
             aria-label="Change avatar"
           >
-            {loading ? (
+            {state.loading ? (
               <Loader2 className="h-5 w-5 animate-spin text-white" />
             ) : (
               <Camera className="h-5 w-5 text-white" />
             )}
           </button>
 
-          {/* Clear button */}
-          {displayUrl && !loading && (
+          {displayUrl && !state.loading && (
             <button
               type="button"
               onClick={clear}
@@ -99,16 +138,18 @@ export default function ImageUpload({
         <div>
           <button
             type="button"
-            onClick={() => inputRef.current?.click()}
-            disabled={loading}
+            onClick={pickFile}
+            disabled={state.loading}
             className="text-sm font-medium text-primary hover:underline disabled:opacity-50"
           >
-            {loading ? "Uploading…" : "Change photo"}
+            {state.loading ? "Uploading…" : "Change photo"}
           </button>
           <p className="text-xs text-muted-foreground mt-0.5">
             JPG, PNG or WebP · max 5 MB
           </p>
-          {error && <p className="text-xs text-destructive mt-1">{error}</p>}
+          {state.error && (
+            <p className="text-xs text-destructive mt-1">{state.error}</p>
+          )}
         </div>
 
         <input
@@ -116,69 +157,101 @@ export default function ImageUpload({
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handleFile}
+          onChange={onFileChange}
         />
       </div>
-    );
-  }
+    </>
+  );
+}
 
-  // Cover banner
+function coverButtonLabel(loading: boolean, hasUrl: boolean): string {
+  if (loading) return "Uploading…";
+  if (hasUrl) return "Change cover";
+  return "Add cover";
+}
+
+function CoverUpload({
+  currentUrl,
+  onUploaded,
+}: Readonly<Omit<ImageUploadProps, "type">>) {
+  const { inputRef, state, pickFile, onFileChange, onCropConfirm, onCropCancel, clear } =
+    useUpload("cover", onUploaded);
+  const displayUrl = state.preview ?? currentUrl ?? null;
+
   return (
-    <div className="space-y-2">
-      <div className="relative overflow-hidden rounded-lg border border-border bg-muted">
-        {displayUrl ? (
-          <img
-            src={displayUrl}
-            alt="Cover"
-            className="h-32 w-full object-cover"
-          />
-        ) : (
-          <div className="h-32 flex items-center justify-center">
-            <Camera className="h-8 w-8 text-muted-foreground/40" />
-          </div>
-        )}
+    <>
+      {state.cropSrc && (
+        <ImageCropModal
+          imageSrc={state.cropSrc}
+          fileName={state.pendingFileName}
+          type="cover"
+          onConfirm={onCropConfirm}
+          onCancel={onCropCancel}
+        />
+      )}
 
-        {/* Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center gap-2">
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            disabled={loading}
-            className="flex items-center gap-2 rounded-lg bg-black/60 px-3 py-2 text-sm text-white hover:bg-black/75 transition-colors disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Camera className="h-4 w-4" />
-            )}
-            {loading ? "Uploading…" : displayUrl ? "Change cover" : "Add cover"}
-          </button>
+      <div className="space-y-2">
+        <div className="relative overflow-hidden rounded-lg border border-border bg-muted">
+          {displayUrl ? (
+            <img src={displayUrl} alt="Cover" className="h-32 w-full object-cover" />
+          ) : (
+            <div className="h-32 flex items-center justify-center">
+              <Camera className="h-8 w-8 text-muted-foreground/40" />
+            </div>
+          )}
 
-          {displayUrl && !loading && (
+          <div className="absolute inset-0 flex items-center justify-center gap-2">
             <button
               type="button"
-              onClick={clear}
-              className="flex items-center gap-1.5 rounded-lg bg-black/60 px-3 py-2 text-sm text-white hover:bg-black/75 transition-colors"
+              onClick={pickFile}
+              disabled={state.loading}
+              className="flex items-center gap-2 rounded-lg bg-black/60 px-3 py-2 text-sm text-white hover:bg-black/75 transition-colors disabled:cursor-not-allowed"
             >
-              <X className="h-4 w-4" />
-              Remove
+              {state.loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Camera className="h-4 w-4" />
+              )}
+              {coverButtonLabel(state.loading, !!displayUrl)}
             </button>
-          )}
+
+            {displayUrl && !state.loading && (
+              <button
+                type="button"
+                onClick={clear}
+                className="flex items-center gap-1.5 rounded-lg bg-black/60 px-3 py-2 text-sm text-white hover:bg-black/75 transition-colors"
+              >
+                <X className="h-4 w-4" />
+                Remove
+              </button>
+            )}
+          </div>
         </div>
+
+        {state.error && <p className="text-xs text-destructive">{state.error}</p>}
+        <p className="text-xs text-muted-foreground">
+          JPG, PNG or WebP · max 5 MB · 1200×400 recommended
+        </p>
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={onFileChange}
+        />
       </div>
-
-      {error && <p className="text-xs text-destructive">{error}</p>}
-      <p className="text-xs text-muted-foreground">
-        JPG, PNG or WebP · max 5 MB · 1200×400 recommended
-      </p>
-
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFile}
-      />
-    </div>
+    </>
   );
+}
+
+export default function ImageUpload({
+  type,
+  currentUrl,
+  onUploaded,
+}: Readonly<ImageUploadProps>) {
+  if (type === "avatar") {
+    return <AvatarUpload currentUrl={currentUrl} onUploaded={onUploaded} />;
+  }
+  return <CoverUpload currentUrl={currentUrl} onUploaded={onUploaded} />;
 }

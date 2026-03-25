@@ -1,4 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 import { pool } from '../db/pool.js';
 
 const router = Router();
@@ -126,14 +127,44 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  *       200:
  *         description: Trending feed items
  */
-router.get('/trending', async (_req: Request, res: Response, next: NextFunction) => {
+router.get('/trending', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const now = Date.now();
-    if (trendingCache && now - trendingCache.fetchedAt < TRENDING_TTL_MS) {
-      res.json(trendingCache.rows);
+    const rows = (trendingCache && now - trendingCache.fetchedAt < TRENDING_TTL_MS)
+      ? trendingCache.rows
+      : await fetchTrending();
+
+    // Resolve optional viewer so liked_by_me is accurate
+    let viewerId: string | null = null;
+    const auth = req.headers.authorization;
+    if (auth?.startsWith('Bearer ')) {
+      try {
+        const payload = jwt.verify(auth.slice(7), process.env.JWT_SECRET!) as { sub: string };
+        viewerId = payload.sub;
+      } catch {
+        // Invalid/expired token — treat as anonymous
+      }
+    }
+
+    const typedRows = rows as Record<string, unknown>[];
+    if (!viewerId || typedRows.length === 0) {
+      res.json(typedRows.map((r) => ({ ...r, liked_by_me: false })));
       return;
     }
-    res.json(await fetchTrending());
+
+    const answerIds = typedRows.map((r) => r.answer_id);
+    const liked = await pool.query(
+      `SELECT answer_id FROM likes WHERE user_id = $1 AND answer_id = ANY($2::uuid[])`,
+      [viewerId, answerIds]
+    );
+    const likedSet = new Set(liked.rows.map((r: { answer_id: string }) => r.answer_id));
+
+    res.json(
+      typedRows.map((r) => ({
+        ...r,
+        liked_by_me: likedSet.has(r.answer_id as string),
+      }))
+    );
   } catch (err) {
     next(err);
   }

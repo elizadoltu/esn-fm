@@ -28,22 +28,37 @@ export default function ReportButton({
   const [open, setOpen] = useState(false);
   const [reported, setReported] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [reason, setReason] = useState<ReportReason>("spam");
+  const [message, setMessage] = useState("");
 
-  async function handleReport(reason: ReportReason) {
+  function handleOpen(e: React.MouseEvent) {
+    e.preventDefault();
+    setOpen(true);
+  }
+
+  function handleClose() {
+    setOpen(false);
+    setReason("spam");
+    setMessage("");
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
     setLoading(true);
     try {
       await submitReport({
         content_type: contentType,
         content_id: contentId,
         reason,
+        message: message.trim() || undefined,
       });
       setReported(true);
+      handleClose();
       toast.success("Report submitted. We'll review it shortly.");
     } catch {
       // silently ignore duplicate reports (backend uses ON CONFLICT DO NOTHING)
     } finally {
       setLoading(false);
-      setOpen(false);
     }
   }
 
@@ -54,18 +69,14 @@ export default function ReportButton({
   }
 
   return (
-    <div className="relative">
+    <>
       {size === "small" ? (
         <Button
           variant="ghost"
           size="sm"
           className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-          onClick={(e) => {
-            e.preventDefault();
-            setOpen((v) => !v);
-          }}
+          onClick={handleOpen}
           title="Report"
-          disabled={loading}
         >
           <Flag className="h-3.5 w-3.5" />
         </Button>
@@ -74,8 +85,7 @@ export default function ReportButton({
           variant="outline"
           size="sm"
           className="text-muted-foreground"
-          onClick={() => setOpen((v) => !v)}
-          disabled={loading}
+          onClick={handleOpen}
         >
           <Flag className="h-4 w-4 mr-1" />
           Report
@@ -83,36 +93,81 @@ export default function ReportButton({
       )}
 
       {open && (
-        <>
-          <button
-            type="button"
-            aria-label="Close"
-            className="fixed inset-0 z-10"
-            onClick={() => setOpen(false)}
-          />
-          <div className="absolute right-0 top-full z-20 mt-1 min-w-36 rounded-lg border border-border bg-card shadow-lg p-1">
-            {REASONS.map((r) => (
-              <button
-                key={r.value}
-                type="button"
-                onClick={() => handleReport(r.value)}
-                className="flex w-full items-center rounded-md px-3 py-1.5 text-sm hover:bg-accent transition-colors text-left"
-              >
-                {r.label}
-              </button>
-            ))}
-            <div className="mt-1 border-t border-border pt-1">
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="flex w-full items-center rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent transition-colors text-left"
-              >
-                Cancel
-              </button>
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-sm rounded-lg border border-border bg-card p-5 shadow-xl">
+            <h2 className="mb-4 text-base font-semibold">
+              Report {contentType}
+            </h2>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="report-reason"
+                  className="text-sm font-medium"
+                >
+                  Reason
+                </label>
+                <select
+                  id="report-reason"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value as ReportReason)}
+                  className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                >
+                  {REASONS.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="report-message"
+                  className="text-sm font-medium"
+                >
+                  Additional details{" "}
+                  <span className="font-normal text-muted-foreground">
+                    (optional)
+                  </span>
+                </label>
+                <textarea
+                  id="report-message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Describe the issue in more detail…"
+                  maxLength={500}
+                  rows={3}
+                  className="w-full resize-none rounded border border-border bg-background px-3 py-2 text-sm"
+                />
+                <p className="text-right text-xs text-muted-foreground">
+                  {message.length}/500
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClose}
+                  disabled={loading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="destructive"
+                  size="sm"
+                  disabled={loading}
+                >
+                  {loading ? "Submitting…" : "Submit report"}
+                </Button>
+              </div>
+            </form>
           </div>
-        </>
+        </div>
       )}
-    </div>
+    </>
   );
 }

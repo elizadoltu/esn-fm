@@ -46,6 +46,7 @@ export default function AskPage() {
         sender_name:
           isSelf || anonymous ? undefined : senderName || me?.display_name,
         show_in_feed: showInFeed,
+        is_anonymous: anonymous,
       });
       setSubmitted(true);
     } catch (err: unknown) {

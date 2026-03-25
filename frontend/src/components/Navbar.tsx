@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Settings,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/context/useAuth";
 import { Button } from "@/components/ui/button";
@@ -125,6 +126,18 @@ export default function Navbar() {
                     </Link>
                   </Button>
                 ))}
+                {user && (user.role === "admin" || user.role === "moderator") && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    asChild
+                    className={isActive("/admin") ? activeClass : inactiveClass}
+                  >
+                    <Link to="/admin" title="Admin Dashboard">
+                      <ShieldCheck className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -213,6 +226,25 @@ export default function Navbar() {
                 </Link>
               ))}
             </nav>
+
+            {/* Admin section (admin/moderator only) */}
+            {user && (user.role === "admin" || user.role === "moderator") && (
+              <div className="border-t border-border p-3">
+                <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Admin
+                </p>
+                <Link
+                  to="/admin"
+                  onClick={() => setMenuOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                    isActive("/admin") ? activeClass : inactiveClass
+                  }`}
+                >
+                  <ShieldCheck className="h-5 w-5" />
+                  Admin Dashboard
+                </Link>
+              </div>
+            )}
 
             {/* Logout at bottom */}
             <div className="border-t border-border p-3">
