@@ -36,6 +36,13 @@ export default function Navbar() {
   const { data: unreadDmCount = 0 } = useUnreadDmCount();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Pre-compute role-derived values to keep JSX branches simple
+  const isAdminOrMod =
+    !!user && (user.role === "admin" || user.role === "moderator");
+  const dashboardLabel =
+    user?.role === "admin" ? "Admin Dashboard" : "Moderator Dashboard";
+  const dashboardSectionLabel = user?.role === "admin" ? "Admin" : "Moderator";
+
   function handleLogout() {
     logout();
     navigate("/login");
@@ -126,21 +133,18 @@ export default function Navbar() {
                     </Link>
                   </Button>
                 ))}
-                {user &&
-                  (user.role === "admin" || user.role === "moderator") && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      asChild
-                      className={
-                        isActive("/admin") ? activeClass : inactiveClass
-                      }
-                    >
-                      <Link to="/admin" title="Admin Dashboard">
-                        <ShieldCheck className="h-5 w-5" />
-                      </Link>
-                    </Button>
-                  )}
+                {isAdminOrMod && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    asChild
+                    className={isActive("/admin") ? activeClass : inactiveClass}
+                  >
+                    <Link to="/admin" title={dashboardLabel}>
+                      <ShieldCheck className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -230,11 +234,11 @@ export default function Navbar() {
               ))}
             </nav>
 
-            {/* Admin section (admin/moderator only) */}
-            {user && (user.role === "admin" || user.role === "moderator") && (
+            {/* Admin/Moderator section */}
+            {isAdminOrMod && (
               <div className="border-t border-border p-3">
                 <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Admin
+                  {dashboardSectionLabel}
                 </p>
                 <Link
                   to="/admin"
@@ -244,7 +248,7 @@ export default function Navbar() {
                   }`}
                 >
                   <ShieldCheck className="h-5 w-5" />
-                  Admin Dashboard
+                  {dashboardLabel}
                 </Link>
               </div>
             )}

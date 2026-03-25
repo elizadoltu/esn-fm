@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useParams, Link, useLocation } from "react-router-dom";
 import {
   UserCircle2,
   MapPin,
@@ -39,6 +39,20 @@ export default function ProfilePage() {
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const location = useLocation();
+
+  // Scroll to a specific answer when navigating from a notification link.
+  // Both feedData and profile must be ready — they load in parallel, and
+  // FeedCards aren't rendered until profileLoading is false.
+  useEffect(() => {
+    if (feedLoading || profileLoading) return;
+    const hash = location.hash; // e.g. "#answer-<uuid>"
+    if (!hash) return;
+    const el = document.getElementById(hash.slice(1));
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [feedData, feedLoading, profileLoading, location.hash]);
 
   function handleAvatarFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
