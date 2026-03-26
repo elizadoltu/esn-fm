@@ -68,7 +68,15 @@ export default function ProfilePage() {
     } else if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [feedItems, feedLoading, profileLoading, location.hash, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [
+    feedItems,
+    feedLoading,
+    profileLoading,
+    location.hash,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  ]);
 
   // Infinite scroll
   useEffect(() => {

@@ -56,97 +56,103 @@ export default function App() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>}>
-      <Routes>
-        {/* Public */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/explore" element={<ExplorePage />} />
-        <Route path="/ask/:username" element={<AskPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/daily-q/archive" element={<DailyQArchivePage />} />
-        <Route path="/daily-q/:id" element={<DailyQDetailPage />} />
-        <Route path="/:username" element={<ProfilePage />} />
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        }
+      >
+        <Routes>
+          {/* Public */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/ask/:username" element={<AskPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/daily-q/archive" element={<DailyQArchivePage />} />
+          <Route path="/daily-q/:id" element={<DailyQDetailPage />} />
+          <Route path="/:username" element={<ProfilePage />} />
 
-        {/* Protected */}
-        <Route
-          path="/home"
-          element={
-            <RequireAuth>
-              <HomePage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/inbox"
-          element={
-            <RequireAuth>
-              <InboxPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/notifications"
-          element={
-            <RequireAuth>
-              <NotificationsPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/messages"
-          element={
-            <RequireAuth>
-              <MessagesPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/messages/:username"
-          element={
-            <RequireAuth>
-              <ConversationPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <RequireAuth>
-              <SettingsPage />
-            </RequireAuth>
-          }
-        />
+          {/* Protected */}
+          <Route
+            path="/home"
+            element={
+              <RequireAuth>
+                <HomePage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/inbox"
+            element={
+              <RequireAuth>
+                <InboxPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <RequireAuth>
+                <NotificationsPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/messages"
+            element={
+              <RequireAuth>
+                <MessagesPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/messages/:username"
+            element={
+              <RequireAuth>
+                <ConversationPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <RequireAuth>
+                <SettingsPage />
+              </RequireAuth>
+            }
+          />
 
-        {/* Admin */}
-        <Route
-          path="/admin"
-          element={
-            <RequireAdmin>
-              <AdminPage />
-            </RequireAdmin>
-          }
-        />
+          {/* Admin */}
+          <Route
+            path="/admin"
+            element={
+              <RequireAdmin>
+                <AdminPage />
+              </RequireAdmin>
+            }
+          />
 
-        {/* Onboarding */}
-        <Route
-          path="/onboarding"
-          element={
-            <RequireOnboarding>
-              <OnboardingPage />
-            </RequireOnboarding>
-          }
-        />
+          {/* Onboarding */}
+          <Route
+            path="/onboarding"
+            element={
+              <RequireOnboarding>
+                <OnboardingPage />
+              </RequireOnboarding>
+            }
+          />
 
-        {/* Default */}
-        <Route
-          path="/"
-          element={
-            <Navigate to={isAuthenticated ? "/home" : "/login"} replace />
-          }
-        />
-      </Routes>
+          {/* Default */}
+          <Route
+            path="/"
+            element={
+              <Navigate to={isAuthenticated ? "/home" : "/login"} replace />
+            }
+          />
+        </Routes>
       </Suspense>
     </div>
   );

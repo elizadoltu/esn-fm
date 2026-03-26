@@ -77,8 +77,12 @@ export function useMainFeedLike() {
     onMutate: async (answerId) => {
       await qc.cancelQueries({ queryKey: ["mainFeed"] });
       await qc.cancelQueries({ queryKey: ["homeFeed"] });
-      const prevMain = qc.getQueryData<InfiniteData<FeedResponse>>(["mainFeed"]);
-      const prevHome = qc.getQueryData<InfiniteData<FeedResponse>>(["homeFeed"]);
+      const prevMain = qc.getQueryData<InfiniteData<FeedResponse>>([
+        "mainFeed",
+      ]);
+      const prevHome = qc.getQueryData<InfiniteData<FeedResponse>>([
+        "homeFeed",
+      ]);
       qc.setQueryData<InfiniteData<FeedResponse>>(
         ["mainFeed"],
         patchLike(answerId)

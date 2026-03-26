@@ -58,8 +58,14 @@ export function useLike(username: string) {
     mutationFn: (answerId: string) => toggleLike(answerId),
     onMutate: async (answerId) => {
       await qc.cancelQueries({ queryKey: ["feed", username] });
-      const prev = qc.getQueryData<InfiniteData<FeedResponse>>(["feed", username]);
-      qc.setQueryData<InfiniteData<FeedResponse>>(["feed", username], patchLike(answerId));
+      const prev = qc.getQueryData<InfiniteData<FeedResponse>>([
+        "feed",
+        username,
+      ]);
+      qc.setQueryData<InfiniteData<FeedResponse>>(
+        ["feed", username],
+        patchLike(answerId)
+      );
       return { prev };
     },
     onError: (_err, _id, ctx) => {
