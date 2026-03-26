@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Compass } from "lucide-react";
 import {
@@ -23,6 +23,12 @@ type FeedTab = "main" | "friends" | "daily";
 
 const TAB_KEY = "home_feed_tab";
 
+const TAB_LABELS: Record<FeedTab, string> = {
+  main: "Main",
+  friends: "Friends",
+  daily: "Daily Q",
+};
+
 function getInitialTab(): FeedTab {
   const stored = localStorage.getItem(TAB_KEY);
   if (stored === "friends" || stored === "daily") return stored;
@@ -32,13 +38,24 @@ function getInitialTab(): FeedTab {
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
   const [tab, setTab] = useState<FeedTab>(getInitialTab);
-  const [mainOffset, setMainOffset] = useState(0);
-  const [friendsOffset, setFriendsOffset] = useState(0);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const { data: mainFeedData, isLoading: mainLoading } =
-    useMainFeed(mainOffset);
-  const { data: friendsFeedData, isLoading: friendsLoading } =
-    useHomeFeed(friendsOffset);
+  const {
+    data: mainFeedData,
+    isLoading: mainLoading,
+    fetchNextPage: fetchNextMain,
+    hasNextPage: hasNextMain,
+    isFetchingNextPage: fetchingNextMain,
+  } = useMainFeed();
+
+  const {
+    data: friendsFeedData,
+    isLoading: friendsLoading,
+    fetchNextPage: fetchNextFriends,
+    hasNextPage: hasNextFriends,
+    isFetchingNextPage: fetchingNextFriends,
+  } = useHomeFeed();
+
   const mainLike = useMainFeedLike();
   const friendsLike = useHomeFeedLike();
 
@@ -52,25 +69,30 @@ export default function HomePage() {
     localStorage.setItem(TAB_KEY, t);
   }
 
-  let isLoading = false;
-  let items: FeedItem[] = [];
-  let offset = 0;
-  let setOffset: (fn: (o: number) => number) => void = setMainOffset;
-  let like = mainLike;
+  const isMain = tab === "main";
+  const isLoading = isMain ? mainLoading : friendsLoading;
+  const items: FeedItem[] = isMain
+    ? (mainFeedData?.pages.flatMap((p) => p.items) ?? [])
+    : (friendsFeedData?.pages.flatMap((p) => p.items) ?? []);
+  const hasNextPage = isMain ? hasNextMain : hasNextFriends;
+  const isFetchingNextPage = isMain ? fetchingNextMain : fetchingNextFriends;
+  const fetchNextPage = isMain ? fetchNextMain : fetchNextFriends;
+  const likeMutate = isMain ? mainLike.mutate : friendsLike.mutate;
 
-  if (tab === "main") {
-    isLoading = mainLoading;
-    items = mainFeedData?.items ?? [];
-    offset = mainOffset;
-    setOffset = setMainOffset;
-    like = mainLike;
-  } else if (tab === "friends") {
-    isLoading = friendsLoading;
-    items = friendsFeedData?.items ?? [];
-    offset = friendsOffset;
-    setOffset = setFriendsOffset;
-    like = friendsLike;
-  }
+  // Infinite scroll: load next page when sentinel enters viewport
+  useEffect(() => {
+    if (!sentinelRef.current || tab === "daily") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [tab, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <div className="mx-auto max-w-xl px-4 py-8">
@@ -88,7 +110,7 @@ export default function HomePage() {
                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
             }`}
           >
-            {t === "main" ? "Main" : t === "friends" ? "Friends" : "Daily Q"}
+            {TAB_LABELS[t]}
           </button>
         ))}
       </div>
@@ -107,7 +129,7 @@ export default function HomePage() {
       {/* Main / Friends tabs */}
       {tab !== "daily" && (
         <>
-          {/* Loading */}
+          {/* Initial loading skeletons */}
           {isLoading && (
             <div className="space-y-4">
               {[1, 2, 3].map((n) => (
@@ -117,25 +139,22 @@ export default function HomePage() {
           )}
 
           {/* Friends empty state */}
-          {!isLoading &&
-            tab === "friends" &&
-            items.length === 0 &&
-            friendsOffset === 0 && (
-              <div className="py-16 text-center">
-                <Compass className="mx-auto mb-4 h-12 w-12 text-muted-foreground/40" />
-                <h2 className="mb-2 text-xl font-bold">
-                  No friends activity yet
-                </h2>
-                <p className="mb-6 text-sm text-muted-foreground">
-                  Follow people to see their Q&amp;As here.
-                </p>
-                <Button asChild>
-                  <Link to="/explore">Discover people</Link>
-                </Button>
-              </div>
-            )}
+          {!isLoading && tab === "friends" && items.length === 0 && (
+            <div className="py-16 text-center">
+              <Compass className="mx-auto mb-4 h-12 w-12 text-muted-foreground/40" />
+              <h2 className="mb-2 text-xl font-bold">
+                No friends activity yet
+              </h2>
+              <p className="mb-6 text-sm text-muted-foreground">
+                Follow people to see their Q&amp;As here.
+              </p>
+              <Button asChild>
+                <Link to="/explore">Discover people</Link>
+              </Button>
+            </div>
+          )}
 
-          {/* Feed items — Friends tab groups consecutive same-user cards */}
+          {/* Feed items */}
           {!isLoading && items.length > 0 && (
             <div className="space-y-4">
               {items.map((item, idx) => {
@@ -157,7 +176,7 @@ export default function HomePage() {
                     )}
                     <FeedCard
                       item={item}
-                      onLike={(id) => like.mutate(id)}
+                      onLike={(id) => likeMutate(id)}
                       isAuthenticated={isAuthenticated}
                       showAuthor
                     />
@@ -167,27 +186,11 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* Pagination */}
-          {!isLoading && (
-            <div className="mt-6 flex justify-center gap-3">
-              {offset > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setOffset((o) => Math.max(0, o - 20))}
-                >
-                  Previous
-                </Button>
-              )}
-              {items.length === 20 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setOffset((o) => o + 20)}
-                >
-                  Load more
-                </Button>
-              )}
+          {/* Infinite scroll sentinel + spinner */}
+          <div ref={sentinelRef} className="h-4" />
+          {isFetchingNextPage && (
+            <div className="flex justify-center py-4">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
           )}
         </>

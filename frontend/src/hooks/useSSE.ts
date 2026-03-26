@@ -26,6 +26,25 @@ export function useSSE() {
       qc.invalidateQueries({ queryKey: ["dm"] });
     });
 
+    es.addEventListener("like", (e: MessageEvent) => {
+      const { answer_id } = JSON.parse(e.data) as { answer_id: string };
+      qc.invalidateQueries({ queryKey: ["mainFeed"] });
+      qc.invalidateQueries({ queryKey: ["homeFeed"] });
+      qc.invalidateQueries({ queryKey: ["trending"] });
+      // Invalidate the specific answer's profile feed if cached
+      qc.invalidateQueries({ predicate: (q) => q.queryKey[0] === "feed" });
+      console.debug("[sse] like on answer", answer_id);
+    });
+
+    es.addEventListener("comment", (e: MessageEvent) => {
+      const { answer_id } = JSON.parse(e.data) as { answer_id: string };
+      qc.invalidateQueries({ queryKey: ["mainFeed"] });
+      qc.invalidateQueries({ queryKey: ["homeFeed"] });
+      qc.invalidateQueries({ queryKey: ["trending"] });
+      qc.invalidateQueries({ predicate: (q) => q.queryKey[0] === "feed" });
+      qc.invalidateQueries({ queryKey: ["comments", answer_id] });
+    });
+
     es.onerror = () => {
       // EventSource auto-reconnects on error; nothing to do
     };

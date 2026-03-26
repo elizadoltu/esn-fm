@@ -43,6 +43,7 @@ export function useSubmitDailyQAnswer() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dailyQuestion"] });
       qc.invalidateQueries({ queryKey: ["dailyQAnswers"] });
+      qc.invalidateQueries({ queryKey: ["userDailyQAnswers"] });
     },
   });
 }
