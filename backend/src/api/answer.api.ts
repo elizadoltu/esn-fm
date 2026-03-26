@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { pool } from '../db/pool.js';
 import { postAnswerSchema } from '../validators/answer.validator.js';
 import { createNotification } from '../db/notifications.js';
+import { sendSSE } from '../lib/sse.js';
 
 export async function postAnswer(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -214,12 +215,9 @@ export async function toggleLike(req: Request, res: Response, next: NextFunction
         req.params.id,
       ]);
       if (answerResult.rows[0]) {
-        await createNotification(
-          answerResult.rows[0].author_id,
-          'new_like',
-          req.params.id,
-          req.user!.id
-        );
+        const authorId = answerResult.rows[0].author_id;
+        await createNotification(authorId, 'new_like', req.params.id, req.user!.id);
+        sendSSE(authorId, 'like', { answer_id: req.params.id });
       }
 
       res.json({ liked: true });

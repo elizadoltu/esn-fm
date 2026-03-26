@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { pool } from '../db/pool.js';
 import { postCommentSchema } from '../validators/comment.validator.js';
 import { createNotification } from '../db/notifications.js';
+import { sendSSE } from '../lib/sse.js';
 
 export async function postComment(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -49,9 +50,10 @@ export async function postComment(req: Request, res: Response, next: NextFunctio
 
     // Notify answer author (if different from commenter)
     if (answer.author_id !== req.user!.id) {
-      // reference_id = answer.id so the client can deep-link to the specific answer
       await createNotification(answer.author_id, 'new_comment', answer.id, req.user!.id);
     }
+    // Push live comment count update to answer author
+    sendSSE(answer.author_id, 'comment', { answer_id: data.answer_id });
 
     // If it's a reply, also notify parent comment author
     if (data.parent_comment_id) {

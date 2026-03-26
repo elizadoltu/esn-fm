@@ -36,11 +36,14 @@ export default function ProfilePage() {
   const { data: profile, isLoading: profileLoading } = useProfile(
     username ?? ""
   );
-  const [feedLimit, setFeedLimit] = useState(20);
-  const { data: feedData, isLoading: feedLoading } = useFeed(
-    username ?? "",
-    feedLimit
-  );
+  const {
+    data: feedData,
+    isLoading: feedLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useFeed(username ?? "");
+  const feedItems = feedData?.pages.flatMap((p) => p.items) ?? [];
   const like = useLike(username ?? "");
   const followToggle = useFollowToggle(username ?? "");
   const { data: dailyQAnswers = [] } = useUserDailyQAnswers(username ?? "");
@@ -50,12 +53,11 @@ export default function ProfilePage() {
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
   // Scroll to a specific answer from a notification / shared link.
-  // Profile and feed must both be ready (they load in parallel).
-  // If the element is not yet in the DOM, keep loading more pages (up to 200)
-  // until it is found — the answer might be older than the initial 20 items.
+  // If the element isn't rendered yet, keep fetching more pages until found.
   useEffect(() => {
     if (feedLoading || profileLoading) return;
     const hash = location.hash;
@@ -63,10 +65,33 @@ export default function ProfilePage() {
     const el = document.getElementById(hash.slice(1));
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
-    } else if (feedData?.items.length === feedLimit && feedLimit < 200) {
-      setFeedLimit((prev) => prev + 20);
+    } else if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-  }, [feedData, feedLoading, profileLoading, location.hash, feedLimit]);
+  }, [
+    feedItems,
+    feedLoading,
+    profileLoading,
+    location.hash,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  ]);
+
+  // Infinite scroll
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   function handleAvatarFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -345,7 +370,7 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {feedData?.items.map((item) => (
+              {feedItems.map((item) => (
                 <FeedCard
                   key={item.answer_id}
                   item={item}
@@ -353,10 +378,16 @@ export default function ProfilePage() {
                   isAuthenticated={isAuthenticated}
                 />
               ))}
-              {feedData?.items.length === 0 && (
+              {feedItems.length === 0 && (
                 <p className="py-12 text-center text-muted-foreground">
                   No answered questions yet.
                 </p>
+              )}
+              <div ref={sentinelRef} className="h-4" />
+              {isFetchingNextPage && (
+                <div className="flex justify-center py-4">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                </div>
               )}
             </div>
           ))}
