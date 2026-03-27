@@ -47,6 +47,10 @@ export async function getFollowing(username: string): Promise<FollowUser[]> {
   return res.data;
 }
 
+export async function removeFollower(username: string): Promise<void> {
+  await client.delete(`/api/follows/${username}/follower`);
+}
+
 export interface SuggestionUser {
   id: string;
   username: string;

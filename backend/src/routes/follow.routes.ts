@@ -6,6 +6,7 @@ import {
   declineFollowRequest,
   followUser,
   unfollowUser,
+  removeFollower,
   getFollowers,
   getFollowing,
 } from '../api/follow.api.js';
@@ -69,6 +70,8 @@ router.post('/:username', verifyJWT, followUser);
  *       - bearerAuth: []
  */
 router.delete('/:username', verifyJWT, unfollowUser);
+
+router.delete('/:username/follower', verifyJWT, removeFollower);
 
 /**
  * @openapi

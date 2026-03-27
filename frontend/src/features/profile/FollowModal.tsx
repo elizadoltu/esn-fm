@@ -1,7 +1,16 @@
 import { Link } from "react-router-dom";
 import { UserCircle2, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getFollowers, getFollowing, type FollowUser } from "@/api/follows.api";
+import {
+  getFollowers,
+  getFollowing,
+  type FollowUser,
+} from "@/api/follows.api";
+import { useAuth } from "@/context/useAuth";
+import {
+  useUnfollowInModal,
+  useRemoveFollower,
+} from "@/hooks/useFollow";
 
 export type ModalTab = "followers" | "following";
 
@@ -18,6 +27,9 @@ export default function FollowModal({
   onClose,
   onTabChange,
 }: Readonly<FollowModalProps>) {
+  const { user: me } = useAuth();
+  const isOwner = me?.username === username;
+
   const { data: followers = [], isLoading: loadingFollowers } = useQuery({
     queryKey: ["followers", username],
     queryFn: () => getFollowers(username),
@@ -26,6 +38,9 @@ export default function FollowModal({
     queryKey: ["following", username],
     queryFn: () => getFollowing(username),
   });
+
+  const unfollowInModal = useUnfollowInModal(username);
+  const removeFollower = useRemoveFollower(username);
 
   const list: FollowUser[] = tab === "followers" ? followers : following;
   const isLoading = tab === "followers" ? loadingFollowers : loadingFollowing;
@@ -78,26 +93,54 @@ export default function FollowModal({
             </p>
           )}
           {list.map((u) => (
-            <Link
+            <div
               key={u.id}
-              to={`/${u.username}`}
-              onClick={onClose}
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-accent transition-colors"
             >
-              {u.avatar_url ? (
-                <img
-                  src={u.avatar_url}
-                  alt={u.display_name}
-                  className="h-9 w-9 rounded-full object-cover shrink-0"
-                />
-              ) : (
-                <UserCircle2 className="h-9 w-9 shrink-0 text-muted-foreground/40" />
+              <Link
+                to={`/${u.username}`}
+                onClick={onClose}
+                className="flex items-center gap-3 flex-1 min-w-0"
+              >
+                {u.avatar_url ? (
+                  <img
+                    src={u.avatar_url}
+                    alt={u.display_name}
+                    className="h-9 w-9 rounded-full object-cover shrink-0"
+                  />
+                ) : (
+                  <UserCircle2 className="h-9 w-9 shrink-0 text-muted-foreground/40" />
+                )}
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{u.display_name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    @{u.username}
+                  </p>
+                </div>
+              </Link>
+
+              {isOwner && tab === "following" && (
+                <button
+                  type="button"
+                  onClick={() => unfollowInModal.mutate(u.username)}
+                  disabled={unfollowInModal.isPending}
+                  className="shrink-0 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground hover:border-destructive hover:text-destructive transition-colors disabled:opacity-50"
+                >
+                  Unfollow
+                </button>
               )}
-              <div className="min-w-0">
-                <p className="font-medium truncate">{u.display_name}</p>
-                <p className="text-xs text-muted-foreground">@{u.username}</p>
-              </div>
-            </Link>
+
+              {isOwner && tab === "followers" && (
+                <button
+                  type="button"
+                  onClick={() => removeFollower.mutate(u.username)}
+                  disabled={removeFollower.isPending}
+                  className="shrink-0 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground hover:border-destructive hover:text-destructive transition-colors disabled:opacity-50"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
           ))}
         </div>
       </div>

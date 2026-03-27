@@ -27,6 +27,7 @@ import {
 import { useAuth } from "@/context/useAuth";
 import type { Comment } from "@/api/comments.api";
 import ReportButton from "@/components/ReportButton";
+import ImageViewer from "@/components/ImageViewer";
 import { uploadImage } from "@/api/upload.api";
 import { compressImage } from "@/lib/compressImage";
 import { useQueryClient } from "@tanstack/react-query";
@@ -57,6 +58,7 @@ function CommentItem({
   const likeComment = useLikeComment(answerId);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [showAllReplies, setShowAllReplies] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const visibleReplies = showAllReplies
     ? comment.replies
     : comment.replies.slice(0, REPLIES_VISIBLE);
@@ -117,11 +119,17 @@ function CommentItem({
           <p className="text-sm text-foreground">{comment.content}</p>
         )}
         {comment.image_url && !comment.is_deleted && (
-          <img
-            src={comment.image_url}
-            alt=""
-            className="mt-1.5 w-full rounded-md object-cover max-h-60"
-          />
+          <button
+            type="button"
+            className="mt-1.5 w-full cursor-zoom-in"
+            onClick={() => setZoomedImage(comment.image_url!)}
+          >
+            <img
+              src={comment.image_url}
+              alt=""
+              className="w-full rounded-md object-cover max-h-60"
+            />
+          </button>
         )}
         {!comment.is_deleted && (
           <div className="flex items-center gap-1 mt-1.5">
@@ -181,11 +189,17 @@ function CommentItem({
                 <p className="text-sm text-foreground">{reply.content}</p>
               )}
               {reply.image_url && !reply.is_deleted && (
-                <img
-                  src={reply.image_url}
-                  alt=""
-                  className="mt-1.5 w-full rounded-md object-cover max-h-60"
-                />
+                <button
+                  type="button"
+                  className="mt-1.5 w-full cursor-zoom-in"
+                  onClick={() => setZoomedImage(reply.image_url!)}
+                >
+                  <img
+                    src={reply.image_url}
+                    alt=""
+                    className="w-full rounded-md object-cover max-h-60"
+                  />
+                </button>
               )}
               {!reply.is_deleted && (
                 <div className="flex items-center gap-1 mt-1.5">
@@ -243,6 +257,9 @@ function CommentItem({
             </button>
           )}
         </div>
+      )}
+      {zoomedImage && (
+        <ImageViewer src={zoomedImage} onClose={() => setZoomedImage(null)} />
       )}
     </div>
   );
@@ -412,6 +429,7 @@ export default function FeedCard({
   );
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showActions, setShowActions] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const commentImageInputRef = useRef<HTMLInputElement>(null);
 
   const isOwner =
@@ -509,11 +527,17 @@ export default function FeedCard({
 
         {/* Answer image */}
         {item.answer_image_url && (
-          <img
-            src={item.answer_image_url}
-            alt=""
-            className="mt-3 w-full rounded-lg object-cover max-h-80"
-          />
+          <button
+            type="button"
+            className="mt-3 w-full cursor-zoom-in"
+            onClick={() => setZoomedImage(item.answer_image_url!)}
+          >
+            <img
+              src={item.answer_image_url}
+              alt=""
+              className="w-full rounded-lg object-cover max-h-80"
+            />
+          </button>
         )}
 
         {/* Footer */}
@@ -698,6 +722,9 @@ export default function FeedCard({
           isOwner={isOwner}
           onClose={() => setShowActions(false)}
         />
+      )}
+      {zoomedImage && (
+        <ImageViewer src={zoomedImage} onClose={() => setZoomedImage(null)} />
       )}
     </Card>
   );
