@@ -51,7 +51,10 @@ export function notificationText(n: Notification): string {
         n.reference_content
       );
     case "new_reply":
-      return withSnippet(`${name} replied to your comment`, n.reference_content);
+      return withSnippet(
+        `${name} replied to your comment`,
+        n.reference_content
+      );
     case "new_follower":
       return `${name} started following you`;
     case "new_question":

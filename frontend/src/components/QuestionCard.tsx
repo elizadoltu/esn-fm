@@ -283,7 +283,9 @@ export default function QuestionCard({
                 <Button
                   size="sm"
                   onClick={handleAnswer}
-                  disabled={(!text.trim() && !imageUrl) || isAnswering || uploading}
+                  disabled={
+                    (!text.trim() && !imageUrl) || isAnswering || uploading
+                  }
                 >
                   <Send className="h-4 w-4" />
                   {isAnswering ? "Posting…" : "Post answer"}

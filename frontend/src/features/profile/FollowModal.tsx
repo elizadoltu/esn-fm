@@ -1,16 +1,9 @@
 import { Link } from "react-router-dom";
 import { UserCircle2, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  getFollowers,
-  getFollowing,
-  type FollowUser,
-} from "@/api/follows.api";
+import { getFollowers, getFollowing, type FollowUser } from "@/api/follows.api";
 import { useAuth } from "@/context/useAuth";
-import {
-  useUnfollowInModal,
-  useRemoveFollower,
-} from "@/hooks/useFollow";
+import { useUnfollowInModal, useRemoveFollower } from "@/hooks/useFollow";
 
 export type ModalTab = "followers" | "following";
 
@@ -113,9 +106,7 @@ export default function FollowModal({
                 )}
                 <div className="min-w-0">
                   <p className="font-medium truncate">{u.display_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    @{u.username}
-                  </p>
+                  <p className="text-xs text-muted-foreground">@{u.username}</p>
                 </div>
               </Link>
 

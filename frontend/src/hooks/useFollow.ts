@@ -1,9 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  followUser,
-  unfollowUser,
-  removeFollower,
-} from "@/api/follows.api";
+import { followUser, unfollowUser, removeFollower } from "@/api/follows.api";
 
 export function useFollowToggle(username: string) {
   const qc = useQueryClient();
