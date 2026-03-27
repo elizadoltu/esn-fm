@@ -12,9 +12,17 @@ export async function getNotifications(
       `SELECT
          n.id, n.type, n.reference_id, n.is_read, n.created_at,
          u.id AS actor_id, u.username AS actor_username,
-         u.display_name AS actor_display_name, u.avatar_url AS actor_avatar_url
+         u.display_name AS actor_display_name, u.avatar_url AS actor_avatar_url,
+         CASE
+           WHEN n.type IN ('new_like', 'new_comment', 'new_reply')
+           THEN LEFT(a.content, 60)
+           ELSE NULL
+         END AS reference_content
        FROM notifications n
        LEFT JOIN users u ON u.id = n.actor_id
+       LEFT JOIN answers a
+         ON n.type IN ('new_like', 'new_comment', 'new_reply')
+         AND a.id = n.reference_id
        WHERE n.recipient_id = $1
          AND n.type != 'moderation_alert'
          ${unreadOnly ? 'AND n.is_read = FALSE' : ''}
@@ -29,6 +37,7 @@ export async function getNotifications(
       reference_id: row.reference_id,
       is_read: row.is_read,
       created_at: row.created_at,
+      reference_content: row.reference_content ?? null,
       actor: row.actor_id
         ? {
             id: row.actor_id,

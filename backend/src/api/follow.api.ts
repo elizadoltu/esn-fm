@@ -140,6 +140,29 @@ export async function unfollowUser(req: Request, res: Response, next: NextFuncti
   }
 }
 
+export async function removeFollower(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const follower = await pool.query(`SELECT id FROM users WHERE username = $1`, [
+      req.params.username,
+    ]);
+    if (!follower.rows[0]) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    await pool.query(`DELETE FROM follows WHERE follower_id = $1 AND following_id = $2`, [
+      follower.rows[0].id,
+      req.user!.id,
+    ]);
+    res.json({ removed: true });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function getFollowers(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const target = await pool.query(`SELECT id FROM users WHERE username = $1`, [

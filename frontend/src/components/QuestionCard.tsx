@@ -189,7 +189,7 @@ export default function QuestionCard({
   }
 
   async function handleAnswer() {
-    if (!text.trim()) return;
+    if (!text.trim() && !imageUrl) return;
     setError(null);
     try {
       await onAnswer(question.id, text, imageUrl ?? undefined);
@@ -283,7 +283,9 @@ export default function QuestionCard({
                 <Button
                   size="sm"
                   onClick={handleAnswer}
-                  disabled={!text.trim() || isAnswering || uploading}
+                  disabled={
+                    (!text.trim() && !imageUrl) || isAnswering || uploading
+                  }
                 >
                   <Send className="h-4 w-4" />
                   {isAnswering ? "Posting…" : "Post answer"}

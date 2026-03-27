@@ -18,6 +18,7 @@ export interface Notification {
   reference_id: string;
   is_read: boolean;
   created_at: string;
+  reference_content?: string | null;
   actor: {
     id: string;
     username: string;

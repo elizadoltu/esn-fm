@@ -34,19 +34,33 @@ export function notificationIcon(type: NotificationType) {
   }
 }
 
+function withSnippet(base: string, content?: string | null): string {
+  if (!content) return base;
+  const snippet = content.length >= 60 ? `${content}…` : content;
+  return `${base}: "${snippet}"`;
+}
+
 export function notificationText(n: Notification): string {
   const name = n.actor?.display_name ?? n.actor?.username ?? "Someone";
   switch (n.type) {
     case "new_like":
-      return `${name} liked your answer`;
+      return withSnippet(`${name} liked your answer`, n.reference_content);
     case "new_comment":
-      return `${name} commented on your answer`;
+      return withSnippet(
+        `${name} commented on your answer`,
+        n.reference_content
+      );
     case "new_reply":
-      return `${name} replied to your comment`;
+      return withSnippet(
+        `${name} replied to your comment`,
+        n.reference_content
+      );
     case "new_follower":
       return `${name} started following you`;
     case "new_question":
-      return "Someone sent you a question";
+      return n.actor
+        ? `${n.actor.display_name} sent you a question`
+        : "Someone sent you a question";
     case "new_answer":
       return `${name} answered your question`;
     case "new_dm":
