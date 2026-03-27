@@ -153,10 +153,10 @@ export async function removeFollower(
       res.status(404).json({ error: 'User not found' });
       return;
     }
-    await pool.query(
-      `DELETE FROM follows WHERE follower_id = $1 AND following_id = $2`,
-      [follower.rows[0].id, req.user!.id]
-    );
+    await pool.query(`DELETE FROM follows WHERE follower_id = $1 AND following_id = $2`, [
+      follower.rows[0].id,
+      req.user!.id,
+    ]);
     res.json({ removed: true });
   } catch (err) {
     next(err);

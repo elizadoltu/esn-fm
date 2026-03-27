@@ -50,7 +50,12 @@ export async function sendQuestion(req: Request, res: Response, next: NextFuncti
     );
 
     // Only reveal the actor when the sender explicitly chose not to be anonymous
-    await createNotification(recipient.id, 'new_question', result.rows[0].id, isAnonymous ? null : senderId);
+    await createNotification(
+      recipient.id,
+      'new_question',
+      result.rows[0].id,
+      isAnonymous ? null : senderId
+    );
 
     res.status(201).json(result.rows[0]);
   } catch (err) {

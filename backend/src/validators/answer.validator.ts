@@ -7,6 +7,6 @@ export const postAnswerSchema = z
     image_url: z.string().url().nullable().optional(),
   })
   .refine((data) => data.content.trim().length > 0 || !!data.image_url, {
-    message: "Answer must have text or an image",
-    path: ["content"],
+    message: 'Answer must have text or an image',
+    path: ['content'],
   });
